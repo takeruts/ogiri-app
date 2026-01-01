@@ -18,7 +18,7 @@ Allow: /terms
 Allow: /privacy
 
 # Sitemap location
-Sitemap: https://ogiri-app.com/sitemap.xml
+Sitemap: https://www.ogirihub.com/sitemap.xml
 
 # Crawl delay (optional)
 Crawl-delay: 1
