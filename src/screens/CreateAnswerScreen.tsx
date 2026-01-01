@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { colors, spacing, borderRadius, typography, shadows } from '../constants/theme';
 
 export const CreateAnswerScreen = ({ route, navigation }: any) => {
   const { topicId } = route.params;
@@ -98,43 +99,45 @@ export const CreateAnswerScreen = ({ route, navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
-    padding: 20,
+    padding: spacing.xxl,
   },
   label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#333',
+    ...typography.body,
+    fontWeight: '600',
+    marginBottom: spacing.sm,
+    marginTop: spacing.md,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 20,
-    fontSize: 16,
+    borderWidth: 2,
+    borderColor: colors.border,
+    borderRadius: borderRadius.md,
+    padding: spacing.lg,
+    marginBottom: spacing.xl,
+    ...typography.body,
+    backgroundColor: colors.surface,
   },
   textArea: {
     height: 200,
     textAlignVertical: 'top',
   },
   button: {
-    backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 8,
+    backgroundColor: colors.accent,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xxl,
+    borderRadius: borderRadius.lg,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: spacing.lg,
+    ...shadows.md,
   },
   buttonDisabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    ...typography.button,
+    color: colors.textInverse,
   },
 });

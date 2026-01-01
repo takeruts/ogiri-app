@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { LoginScreen } from './LoginScreen';
 import { SignUpScreen } from './SignUpScreen';
-import { TouchableOpacity, Text } from 'react-native';
+import { colors, spacing, typography } from '../constants/theme';
 
 export const AuthScreen = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -26,14 +26,15 @@ export const AuthScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
   },
   switchButton: {
-    padding: 20,
+    padding: spacing.xxl,
     alignItems: 'center',
   },
   switchText: {
-    color: '#007AFF',
-    fontSize: 14,
+    ...typography.bodySmall,
+    color: colors.primary,
+    fontWeight: '600',
   },
 });

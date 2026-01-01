@@ -10,6 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import { colors, spacing, borderRadius, typography, shadows } from '../constants/theme';
 
 export const SignUpScreen = () => {
   const [email, setEmail] = useState('');
@@ -55,7 +56,7 @@ export const SignUpScreen = () => {
       style={styles.container}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>大喜利アプリ</Text>
+        <Text style={styles.title}>オオギリハブ</Text>
         <Text style={styles.subtitle}>新規登録</Text>
 
         <TextInput
@@ -124,66 +125,71 @@ export const SignUpScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
     justifyContent: 'center',
-    padding: 20,
+    padding: spacing.xxl,
+    maxWidth: 400,
+    width: '100%',
+    alignSelf: 'center',
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    ...typography.h1,
     textAlign: 'center',
-    marginBottom: 10,
-    color: '#333',
+    marginBottom: spacing.sm,
+    color: colors.primary,
   },
   subtitle: {
-    fontSize: 20,
+    ...typography.h3,
     textAlign: 'center',
-    marginBottom: 30,
-    color: '#666',
+    marginBottom: spacing.xxxl,
+    color: colors.textSecondary,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 15,
-    fontSize: 16,
+    borderWidth: 2,
+    borderColor: colors.border,
+    borderRadius: borderRadius.md,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+    ...typography.body,
+    backgroundColor: colors.surface,
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    marginBottom: 15,
+    borderWidth: 2,
+    borderColor: colors.border,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.lg,
+    backgroundColor: colors.surface,
   },
   passwordInput: {
     flex: 1,
-    padding: 15,
-    fontSize: 16,
+    padding: spacing.lg,
+    ...typography.body,
   },
   eyeButton: {
-    padding: 15,
+    padding: spacing.lg,
   },
   eyeText: {
     fontSize: 20,
   },
   button: {
-    backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 8,
+    backgroundColor: colors.accent,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xxl,
+    borderRadius: borderRadius.lg,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: spacing.xl,
+    ...shadows.md,
   },
   buttonDisabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    ...typography.button,
+    color: colors.textInverse,
   },
 });

@@ -14,6 +14,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { colors, spacing, borderRadius, typography, shadows } from '../constants/theme';
 
 export const CreateTopicScreen = ({ navigation }: any) => {
   const [title, setTitle] = useState('');
@@ -174,25 +175,26 @@ export const CreateTopicScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
-    padding: 20,
+    padding: spacing.xxl,
   },
   label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#333',
+    ...typography.body,
+    fontWeight: '600',
+    marginBottom: spacing.sm,
+    marginTop: spacing.md,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 20,
-    fontSize: 16,
+    borderWidth: 2,
+    borderColor: colors.border,
+    borderRadius: borderRadius.md,
+    padding: spacing.lg,
+    marginBottom: spacing.xl,
+    ...typography.body,
+    backgroundColor: colors.surface,
   },
   textArea: {
     height: 120,
@@ -200,57 +202,60 @@ const styles = StyleSheet.create({
   },
   imagePickerButton: {
     borderWidth: 2,
-    borderColor: '#007AFF',
+    borderColor: colors.primary,
     borderStyle: 'dashed',
-    borderRadius: 8,
-    padding: 40,
+    borderRadius: borderRadius.lg,
+    padding: spacing.xxxl,
     alignItems: 'center',
-    marginBottom: 20,
-    backgroundColor: '#f0f8ff',
+    marginBottom: spacing.xl,
+    backgroundColor: colors.primarySoft,
   },
   imagePickerText: {
-    fontSize: 16,
-    color: '#007AFF',
+    ...typography.body,
+    color: colors.primary,
+    fontWeight: '600',
   },
   imageContainer: {
     position: 'relative',
-    marginBottom: 20,
+    marginBottom: spacing.xl,
   },
   image: {
     width: '100%',
     height: 200,
-    borderRadius: 8,
+    borderRadius: borderRadius.lg,
   },
   removeImageButton: {
     position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    top: spacing.md,
+    right: spacing.md,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    width: 36,
+    height: 36,
+    borderRadius: borderRadius.round,
     justifyContent: 'center',
     alignItems: 'center',
+    ...shadows.md,
   },
   removeImageText: {
-    color: '#fff',
-    fontSize: 18,
+    color: colors.textInverse,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   button: {
-    backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 8,
+    backgroundColor: colors.accent,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xxl,
+    borderRadius: borderRadius.lg,
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 30,
+    marginTop: spacing.lg,
+    marginBottom: spacing.xxxl,
+    ...shadows.md,
   },
   buttonDisabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    ...typography.button,
+    color: colors.textInverse,
   },
 });
