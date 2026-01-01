@@ -36,9 +36,8 @@
       ]
     },
     "web": {
-      "favicon": "./assets/favicon.png",
       "bundler": "metro",
-      "output": "static",
+      "output": "single",
       "name": "オオギリパーク",
       "shortName": "オオギリパーク",
       "description": "みんなで楽しむ大喜利のモバイル・ウェブアプリケーション",
