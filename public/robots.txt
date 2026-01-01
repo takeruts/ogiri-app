@@ -1,4 +1,4 @@
-# robots.txt for オオギリパーク (Ogiri Park)
+# robots.txt for オオギリハブ (Ogiri Hub)
 
 User-agent: *
 Allow: /

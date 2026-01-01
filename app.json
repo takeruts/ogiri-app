@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "オオギリパーク",
+    "name": "オオギリハブ",
     "slug": "ogiri-app",
     "version": "1.0.0",
     "description": "みんなで楽しむ大喜利のモバイル・ウェブアプリケーション。お題を投稿して回答を集めよう！",
@@ -38,8 +38,8 @@
     "web": {
       "bundler": "metro",
       "output": "single",
-      "name": "オオギリパーク",
-      "shortName": "オオギリパーク",
+      "name": "オオギリハブ",
+      "shortName": "オオギリハブ",
       "description": "みんなで楽しむ大喜利のモバイル・ウェブアプリケーション",
       "lang": "ja",
       "scope": "/",

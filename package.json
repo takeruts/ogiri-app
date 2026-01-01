@@ -1,7 +1,7 @@
 {
   "name": "ogiri-app",
   "version": "1.0.0",
-  "description": "オオギリパーク - みんなで楽しむお題と回答のモバイルアプリ",
+  "description": "オオギリハブ - みんなで楽しむお題と回答のモバイルアプリ",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
@@ -32,7 +32,7 @@
     "面白い",
     "ランキング"
   ],
-  "author": "オオギリパーク開発チーム",
+  "author": "オオギリハブ開発チーム",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
