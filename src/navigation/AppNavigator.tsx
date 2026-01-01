@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -55,6 +56,13 @@ const MainTabs = () => {
 export const AppNavigator = () => {
   const { session, loading } = useAuth();
 
+  // Web用のドキュメントタイトルを設定
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      document.title = 'オオギリハブ - みんなで楽しむお題と回答投稿コミュニティ';
+    }
+  }, []);
+
   if (loading) {
     return null;
   }
@@ -66,7 +74,10 @@ export const AppNavigator = () => {
           <Stack.Screen
             name="Auth"
             component={AuthScreen}
-            options={{ headerShown: false }}
+            options={{
+              headerShown: false,
+              title: 'オオギリハブ'
+            }}
           />
         ) : (
           <>
