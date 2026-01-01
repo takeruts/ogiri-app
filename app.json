@@ -5,13 +5,7 @@
     "version": "1.0.0",
     "description": "みんなで楽しむ大喜利のモバイル・ウェブアプリケーション。お題を投稿して回答を集めよう！",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -24,10 +18,6 @@
       }
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
       "package": "com.ogiriapp.mobile",
       "permissions": [
         "android.permission.READ_EXTERNAL_STORAGE",
