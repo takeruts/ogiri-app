@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <!-- SEO Meta Tags -->
+  <title>オオギリパーク - みんなで楽しむお題と回答投稿コミュニティ</title>
+  <meta name="description" content="オオギリパークは、面白いお題を投稿したり、お題に対して回答を投稿できるソーシャルアプリです。いいね機能とランキングで人気の回答を見つけよう！iOS、Android、Webで利用可能。">
+  <meta name="keywords" content="オオギリパーク,大喜利,お題,回答,面白い,コミュニティ,SNS,投稿,ランキング,いいね,モバイルアプリ">
+  <meta name="author" content="オオギリパーク開発チーム">
+  <meta name="robots" content="index, follow">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://ogiri-app.com/">
+  <meta property="og:title" content="オオギリパーク - みんなで楽しむお題と回答投稿コミュニティ">
+  <meta property="og:description" content="面白いお題を投稿したり、お題に対して回答を投稿できるソーシャルアプリ。いいね機能とランキングで人気の回答を見つけよう！">
+  <meta property="og:image" content="https://ogiri-app.com/og-image.png">
+  <meta property="og:site_name" content="オオギリパーク">
+  <meta property="og:locale" content="ja_JP">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://ogiri-app.com/">
+  <meta name="twitter:title" content="オオギリパーク - みんなで楽しむお題と回答投稿コミュニティ">
+  <meta name="twitter:description" content="面白いお題を投稿したり、お題に対して回答を投稿できるソーシャルアプリ。いいね機能とランキングで人気の回答を見つけよう！">
+  <meta name="twitter:image" content="https://ogiri-app.com/og-image.png">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#007AFF">
+  <meta name="msapplication-TileColor" content="#007AFF">
+  
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://ogiri-app.com/">
+  
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "オオギリパーク",
+    "url": "https://ogiri-app.com",
+    "description": "面白いお題を投稿したり、お題に対して回答を投稿できるソーシャルアプリ",
+    "applicationCategory": "SocialNetworkingApplication",
+    "operatingSystem": "iOS, Android, Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "JPY"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.5",
+      "ratingCount": "100"
+    },
+    "author": {
+      "@type": "Organization",
+      "name": "オオギリパーク開発チーム"
+    }
+  }
+  </script>
+  
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    #root {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    /* Loading screen */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f5f5f5;
+    }
+    
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid #e0e0e0;
+      border-top: 4px solid #007AFF;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      margin-top: 20px;
+      color: #666;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <noscript>このアプリを実行するにはJavaScriptを有効にしてください。</noscript>
+  <div id="root">
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">読み込み中...</div>
+    </div>
+  </div>
+</body>
+</html>

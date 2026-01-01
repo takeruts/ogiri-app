@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-expo-app:*)",
+      "Bash(npm init -y)",
+      "Bash(npm install:*)",
+      "Bash(npx expo start:*)",
+      "Bash(npx expo install --fix)",
+      "Bash(taskkill:*)",
+      "Bash(npm start)",
+      "Bash(cat:*)",
+      "Bash(npx react-native start:*)",
+      "Bash(npx expo install:*)",
+      "Bash(npm run web:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
