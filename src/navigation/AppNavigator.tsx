@@ -12,6 +12,7 @@ import { TopicDetailScreen } from '../screens/TopicDetailScreen';
 import { CreateAnswerScreen } from '../screens/CreateAnswerScreen';
 import { RankingScreen } from '../screens/RankingScreen';
 import { MyPageScreen } from '../screens/MyPageScreen';
+import { ProfileEditScreen } from '../screens/ProfileEditScreen';
 import { AdminScreen } from '../screens/AdminScreen';
 
 const Stack = createNativeStackNavigator();
@@ -100,6 +101,11 @@ export const AppNavigator = () => {
               name="CreateAnswer"
               component={CreateAnswerScreen}
               options={{ title: '回答を投稿' }}
+            />
+            <Stack.Screen
+              name="ProfileEdit"
+              component={ProfileEditScreen}
+              options={{ title: 'プロフィール編集' }}
             />
             <Stack.Screen
               name="Admin"

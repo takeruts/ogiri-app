@@ -185,6 +185,12 @@ export const MyPageScreen = ({ navigation }: any) => {
       <View style={styles.header}>
         <Text style={styles.username}>{user?.email}</Text>
         <View style={styles.headerButtons}>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => navigation.navigate('ProfileEdit')}
+          >
+            <Text style={styles.editButtonText}>編集</Text>
+          </TouchableOpacity>
           {isAdmin && (
             <TouchableOpacity
               style={styles.adminButton}
@@ -284,6 +290,18 @@ const styles = StyleSheet.create({
   headerButtons: {
     flexDirection: 'row',
     gap: spacing.sm,
+  },
+  editButton: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.secondary,
+    borderRadius: borderRadius.md,
+    ...shadows.sm,
+  },
+  editButtonText: {
+    ...typography.bodySmall,
+    color: colors.textInverse,
+    fontWeight: 'bold',
   },
   adminButton: {
     paddingHorizontal: spacing.lg,
