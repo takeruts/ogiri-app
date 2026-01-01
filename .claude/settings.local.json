@@ -12,7 +12,9 @@
       "Bash(npx react-native start:*)",
       "Bash(npx expo install:*)",
       "Bash(npm run web:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
