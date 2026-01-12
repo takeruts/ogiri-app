@@ -107,8 +107,7 @@ const generateTopicOnce = async (): Promise<TopicResult> => {
       ],
       generationConfig: {
         temperature: 1.0,
-        maxOutputTokens: 100,
-        stopSequences: ['\n\n'],
+        maxOutputTokens: 256,
       },
     }),
   });
