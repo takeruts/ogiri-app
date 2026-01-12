@@ -148,7 +148,9 @@ export const PhotoGameScreen = ({ navigation }: any) => {
     if (!result || !currentPhoto) return;
 
     const emoji = getScoreEmoji(result.score);
-    const text = `${emoji}${result.score}点！「${answer}」
+    const text = `${emoji}${result.score}点！
+
+写真で一言：${answer}
 
 #壁打ちオオギリ #写真で一言
 https://www.ogirihub.com/`;

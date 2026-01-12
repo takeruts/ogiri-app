@@ -293,7 +293,10 @@ export const GameScreen = ({ route, navigation }: any) => {
     if (!result) return;
 
     const emoji = getScoreEmoji(result.score);
-    const text = `${emoji}${result.score}点！「${answer}」
+    const text = `${emoji}${result.score}点！
+
+お題：${currentTopic}
+回答：${answer}
 
 #壁打ちオオギリ #大喜利
 https://www.ogirihub.com/`;
