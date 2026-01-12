@@ -504,7 +504,10 @@ https://www.ogirihub.com/`;
               ]}>
                 <Text style={styles.topicScoreText}>{topicScoreResult.score}点</Text>
               </View>
-              <Text style={styles.topicScoreComment}>{topicScoreResult.comment}</Text>
+              <View style={styles.topicScoreCommentBox}>
+                <Text style={styles.topicScoreCommentLabel}>採点理由</Text>
+                <Text style={styles.topicScoreComment}>{topicScoreResult.comment || '（コメントなし）'}</Text>
+              </View>
               <Text style={styles.topicScoreGenre}>ジャンル: {topicScoreResult.suggestedGenre}</Text>
 
               {topicScoreResult.score >= 80 ? (
@@ -1414,11 +1417,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.textInverse,
   },
+  topicScoreCommentBox: {
+    backgroundColor: colors.background,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.md,
+    width: '100%',
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+  },
+  topicScoreCommentLabel: {
+    ...typography.caption,
+    color: colors.primary,
+    fontWeight: 'bold',
+    marginBottom: spacing.xs,
+  },
   topicScoreComment: {
     ...typography.body,
     color: colors.text,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
+    lineHeight: 22,
   },
   topicScoreGenre: {
     ...typography.bodySmall,
