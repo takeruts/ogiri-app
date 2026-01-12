@@ -1,9 +1,9 @@
 module.exports = {
   expo: {
-    name: 'オオギリハブ',
+    name: '壁打ちオオギリ',
     slug: 'ogiri-app',
     version: '1.0.0',
-    description: 'みんなで楽しむ大喜利のモバイル・ウェブアプリケーション。お題を投稿して回答を集めよう！',
+    description: 'AIが出すお題に挑戦して大喜利の腕を磨けるウェブアプリ。4つの観点でAI採点、ヒントも貰える。',
     orientation: 'portrait',
     icon: './assets/icon.png',
     userInterfaceStyle: 'light',
@@ -38,9 +38,9 @@ module.exports = {
     web: {
       bundler: 'metro',
       output: 'single',
-      name: 'オオギリハブ',
-      shortName: 'オオギリハブ',
-      description: 'みんなで楽しむ大喜利のモバイル・ウェブアプリケーション',
+      name: '壁打ちオオギリ',
+      shortName: '壁打ちオオギリ',
+      description: 'AIが出すお題に挑戦して大喜利の腕を磨けるウェブアプリ',
       lang: 'ja',
       scope: '/',
       themeColor: '#007AFF',
