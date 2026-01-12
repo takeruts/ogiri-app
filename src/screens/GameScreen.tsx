@@ -54,8 +54,22 @@ export const GameScreen = ({ route, navigation }: any) => {
   const checkExistingNickname = async () => {
     setLoading(true);
     try {
-      // ログインユーザーの場合はuser_profilesからdisplay_nameを取得
+      // ログインユーザーの場合
       if (user) {
+        // まずnicknamesテーブルを確認
+        const info = await getNicknameInfo(user.id);
+        if (info) {
+          // ニックネームが既に登録されている場合、すぐにゲーム開始
+          setNickname(info.nickname);
+          setNicknameId(info.nicknameId);
+          setPhase('start');
+          return;
+        }
+
+        // nicknamesテーブルにない場合、各種ソースからニックネームを取得して登録
+        let displayName: string | null = null;
+
+        // 1. user_profilesテーブルから取得
         const { data: profile } = await supabase
           .from('user_profiles')
           .select('display_name')
@@ -63,27 +77,41 @@ export const GameScreen = ({ route, navigation }: any) => {
           .single();
 
         if (profile?.display_name) {
-          // ニックネームテーブルにも登録されているか確認
-          const info = await getNicknameInfo(user.id);
-          if (info) {
-            setNickname(profile.display_name);
-            setNicknameId(info.nicknameId);
+          displayName = profile.display_name;
+        }
+
+        // 2. profilesテーブルから取得
+        if (!displayName) {
+          const { data: profileOld } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', user.id)
+            .single();
+
+          if (profileOld?.username) {
+            displayName = profileOld.username;
+          }
+        }
+
+        // 3. auth.usersのメタデータから取得
+        if (!displayName && user.user_metadata?.nickname) {
+          displayName = user.user_metadata.nickname;
+        }
+
+        if (displayName) {
+          // ニックネームをnicknames テーブルに登録
+          const result = await registerNickname(displayName, user.id);
+          if (result.success && result.nicknameId) {
+            setNickname(displayName);
+            setNicknameId(result.nicknameId);
             setPhase('start');
           } else {
-            // ニックネームテーブルに未登録の場合は登録
-            const result = await registerNickname(profile.display_name, user.id);
-            if (result.success && result.nicknameId) {
-              setNickname(profile.display_name);
-              setNicknameId(result.nicknameId);
-              setPhase('start');
-            } else {
-              // 登録に失敗した場合（重複など）はプロフィール編集へ誘導
-              setNicknameError('プロフィールのニックネームが他のユーザーと重複しています。マイページから変更してください。');
-              setPhase('nickname');
-            }
+            // 登録に失敗した場合（重複など）はプロフィール編集へ誘導
+            setNicknameError('ニックネームが他のユーザーと重複しています。マイページから変更してください。');
+            setPhase('nickname');
           }
         } else {
-          // ログインしているがdisplay_nameが未設定の場合
+          // どこにもニックネームがない場合
           setNicknameError('マイページでニックネームを設定してください');
           setPhase('nickname');
         }

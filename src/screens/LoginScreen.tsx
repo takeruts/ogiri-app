@@ -10,6 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 import { colors, spacing, borderRadius, typography, shadows } from '../constants/theme';
 
 export const LoginScreen = () => {
@@ -17,7 +18,19 @@ export const LoginScreen = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn } = useAuth();
+  const [isResetMode, setIsResetMode] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const { signIn, signInWithGoogle } = useAuth();
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    try {
+      await signInWithGoogle();
+    } catch (error: any) {
+      Alert.alert('ログインエラー', error.message);
+      setLoading(false);
+    }
+  };
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -34,6 +47,104 @@ export const LoginScreen = () => {
       setLoading(false);
     }
   };
+
+  const handleResetPassword = async () => {
+    if (!email.trim()) {
+      Alert.alert('エラー', 'メールアドレスを入力してください');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://www.ogirihub.com/',
+      });
+      if (error) throw error;
+      setResetSent(true);
+    } catch (error: any) {
+      Alert.alert('エラー', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // パスワードリセットメール送信完了画面
+  if (resetSent) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.content}>
+          <Text style={styles.title}>壁打ちオオギリ</Text>
+          <View style={styles.successCard}>
+            <Text style={styles.successIcon}>✉️</Text>
+            <Text style={styles.successTitle}>リセットメールを送信しました</Text>
+            <Text style={styles.successMessage}>
+              {email} にパスワードリセット用の{'\n'}
+              メールを送信しました。{'\n\n'}
+              メール内のリンクをクリックして{'\n'}
+              新しいパスワードを設定してください。
+            </Text>
+            <Text style={styles.successNote}>
+              ※ メールが届かない場合は、迷惑メールフォルダをご確認ください。
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => {
+              setResetSent(false);
+              setIsResetMode(false);
+            }}
+          >
+            <Text style={styles.backButtonText}>ログイン画面に戻る</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  // パスワードリセット画面
+  if (isResetMode) {
+    return (
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}
+      >
+        <View style={styles.content}>
+          <Text style={styles.title}>壁打ちオオギリ</Text>
+          <Text style={styles.subtitle}>パスワードをリセット</Text>
+          <Text style={styles.description}>
+            登録したメールアドレスを入力してください。{'\n'}
+            パスワードリセット用のリンクを送信します。
+          </Text>
+
+          <TextInput
+            style={styles.input}
+            placeholder="メールアドレス"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+          />
+
+          <TouchableOpacity
+            style={[styles.button, (loading || !email.trim()) && styles.buttonDisabled]}
+            onPress={handleResetPassword}
+            disabled={loading || !email.trim()}
+          >
+            <Text style={styles.buttonText}>
+              {loading ? '送信中...' : 'リセットメールを送信'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => setIsResetMode(false)}
+          >
+            <Text style={styles.backButtonText}>ログイン画面に戻る</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -77,6 +188,28 @@ export const LoginScreen = () => {
           <Text style={styles.buttonText}>
             {loading ? 'ログイン中...' : 'ログイン'}
           </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.forgotButton}
+          onPress={() => setIsResetMode(true)}
+        >
+          <Text style={styles.forgotButtonText}>パスワードを忘れた方はこちら</Text>
+        </TouchableOpacity>
+
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>または</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        <TouchableOpacity
+          style={[styles.googleButton, loading && styles.buttonDisabled]}
+          onPress={handleGoogleLogin}
+          disabled={loading}
+        >
+          <Text style={styles.googleIcon}>G</Text>
+          <Text style={styles.googleButtonText}>Googleでログイン</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -152,5 +285,98 @@ const styles = StyleSheet.create({
   buttonText: {
     ...typography.button,
     color: colors.textInverse,
+  },
+  forgotButton: {
+    marginTop: spacing.lg,
+    alignItems: 'center',
+  },
+  forgotButtonText: {
+    ...typography.bodySmall,
+    color: colors.textLight,
+    textDecorationLine: 'underline',
+  },
+  description: {
+    ...typography.body,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: spacing.xl,
+  },
+  backButton: {
+    marginTop: spacing.xl,
+    alignItems: 'center',
+  },
+  backButtonText: {
+    ...typography.body,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  successCard: {
+    backgroundColor: colors.surface,
+    padding: spacing.xxl,
+    borderRadius: borderRadius.lg,
+    alignItems: 'center',
+    ...shadows.md,
+    borderWidth: 2,
+    borderColor: colors.primary,
+  },
+  successIcon: {
+    fontSize: 48,
+    marginBottom: spacing.lg,
+  },
+  successTitle: {
+    ...typography.h2,
+    color: colors.primary,
+    textAlign: 'center',
+    marginBottom: spacing.lg,
+  },
+  successMessage: {
+    ...typography.body,
+    color: colors.text,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: spacing.lg,
+  },
+  successNote: {
+    ...typography.bodySmall,
+    color: colors.textLight,
+    textAlign: 'center',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: spacing.xl,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
+    ...typography.bodySmall,
+    color: colors.textLight,
+    marginHorizontal: spacing.md,
+  },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xxl,
+    borderRadius: borderRadius.lg,
+    borderWidth: 2,
+    borderColor: colors.border,
+    ...shadows.sm,
+  },
+  googleIcon: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#4285F4',
+    marginRight: spacing.md,
+  },
+  googleButtonText: {
+    ...typography.button,
+    color: colors.text,
   },
 });

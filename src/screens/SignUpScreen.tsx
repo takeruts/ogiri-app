@@ -23,9 +23,11 @@ export const SignUpScreen = () => {
   const [isRegistered, setIsRegistered] = useState(false);
   const { signUp } = useAuth();
 
+  // すべての項目が入力されているかチェック
+  const isFormValid = nickname.trim() && email.trim() && password && confirmPassword;
+
   const handleSignUp = async () => {
-    if (!email || !password || !confirmPassword || !nickname) {
-      Alert.alert('エラー', 'すべての項目を入力してください');
+    if (!isFormValid) {
       return;
     }
 
@@ -132,9 +134,9 @@ export const SignUpScreen = () => {
         </View>
 
         <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
+          style={[styles.button, (loading || !isFormValid) && styles.buttonDisabled]}
           onPress={handleSignUp}
-          disabled={loading}
+          disabled={loading || !isFormValid}
         >
           <Text style={styles.buttonText}>
             {loading ? '登録中...' : '登録'}

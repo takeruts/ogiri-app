@@ -6,8 +6,9 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   loading: boolean;
-  signUp: (email: string, password: string, username: string) => Promise<void>;
+  signUp: (email: string, password: string, nickname: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -36,31 +37,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, username: string) => {
+  const signUp = async (email: string, password: string, nickname: string) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
-          username,
+          nickname,
         },
         emailRedirectTo: undefined,
       },
     });
     if (error) throw error;
 
-    // プロフィールを手動で作成（トリガーが動作しない場合の対策）
+    // プロフィールとニックネームを手動で作成
     if (data.user) {
+      // profilesテーブルに保存
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
           id: data.user.id,
-          username: username,
+          username: nickname,
         });
 
       // プロフィールが既に存在する場合はエラーを無視
       if (profileError && !profileError.message.includes('duplicate')) {
         console.error('プロフィール作成エラー:', profileError);
+      }
+
+      // user_profilesテーブルに保存（存在する場合）
+      const { error: userProfileError } = await supabase
+        .from('user_profiles')
+        .upsert({
+          id: data.user.id,
+          display_name: nickname,
+        });
+
+      if (userProfileError && !userProfileError.message.includes('duplicate')) {
+        console.error('ユーザープロフィール作成エラー:', userProfileError);
+      }
+
+      // nicknamesテーブルに保存（ランキング表示用）
+      const { error: nicknameError } = await supabase
+        .from('nicknames')
+        .insert({
+          nickname: nickname.trim(),
+          user_id: data.user.id,
+        });
+
+      if (nicknameError && nicknameError.code !== '23505') {
+        console.error('ニックネーム作成エラー:', nicknameError);
       }
     }
   };
@@ -73,13 +99,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (error) throw error;
   };
 
+  const signInWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'https://www.ogirihub.com/',
+      },
+    });
+    if (error) throw error;
+  };
+
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ session, user, loading, signUp, signIn, signInWithGoogle, signOut }}>
       {children}
     </AuthContext.Provider>
   );
