@@ -33,6 +33,7 @@ export const GameScreen = ({ route, navigation }: any) => {
   const [phase, setPhase] = useState<GamePhase>('nickname');
   const [currentTopic, setCurrentTopic] = useState<string>('');
   const [currentGenre, setCurrentGenre] = useState<string>('');
+  const [isFallbackTopic, setIsFallbackTopic] = useState<boolean>(false);
   const [answer, setAnswer] = useState<string>('');
   const [result, setResult] = useState<ScoreResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -227,9 +228,13 @@ export const GameScreen = ({ route, navigation }: any) => {
         const result = await generateTopic();
         topic = result.topic;
         genre = result.genre;
+        setIsFallbackTopic(result.isFallback || false);
       }
       setCurrentTopic(topic);
       setCurrentGenre(genre);
+      if (challengeTopic) {
+        setIsFallbackTopic(false);
+      }
       setPhase('answering');
       setAnswer('');
       setResult(null);
@@ -407,11 +412,18 @@ https://www.ogirihub.com/`;
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.topicHeader}>
           <Text style={styles.phaseLabel}>お題</Text>
-          {currentGenre ? (
-            <View style={styles.genreBadge}>
-              <Text style={styles.genreBadgeText}>{currentGenre}</Text>
-            </View>
-          ) : null}
+          <View style={styles.badgeRow}>
+            {currentGenre ? (
+              <View style={styles.genreBadge}>
+                <Text style={styles.genreBadgeText}>{currentGenre}</Text>
+              </View>
+            ) : null}
+            {isFallbackTopic && (
+              <View style={styles.fallbackBadge}>
+                <Text style={styles.fallbackBadgeText}>ストック</Text>
+              </View>
+            )}
+          </View>
         </View>
         <View style={styles.topicCardSmall}>
           <Text style={styles.topicTextSmall}>{currentTopic}</Text>
@@ -477,11 +489,18 @@ https://www.ogirihub.com/`;
     <ScrollView contentContainerStyle={styles.scrollContent}>
       <View style={styles.topicHeader}>
         <Text style={styles.phaseLabel}>お題</Text>
-        {currentGenre ? (
-          <View style={styles.genreBadge}>
-            <Text style={styles.genreBadgeText}>{currentGenre}</Text>
-          </View>
-        ) : null}
+        <View style={styles.badgeRow}>
+          {currentGenre ? (
+            <View style={styles.genreBadge}>
+              <Text style={styles.genreBadgeText}>{currentGenre}</Text>
+            </View>
+          ) : null}
+          {isFallbackTopic && (
+            <View style={styles.fallbackBadge}>
+              <Text style={styles.fallbackBadgeText}>ストック</Text>
+            </View>
+          )}
+        </View>
       </View>
       <View style={styles.topicCardSmall}>
         <Text style={styles.topicTextSmall}>{currentTopic}</Text>
@@ -780,6 +799,10 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
+  badgeRow: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
   genreBadge: {
     backgroundColor: colors.secondary,
     paddingVertical: spacing.xs,
@@ -787,6 +810,17 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.round,
   },
   genreBadgeText: {
+    ...typography.caption,
+    color: colors.textInverse,
+    fontWeight: 'bold',
+  },
+  fallbackBadge: {
+    backgroundColor: colors.textLight,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.round,
+  },
+  fallbackBadgeText: {
     ...typography.caption,
     color: colors.textInverse,
     fontWeight: 'bold',

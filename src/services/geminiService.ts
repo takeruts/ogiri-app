@@ -63,6 +63,7 @@ const topicFormats = [
 export interface TopicResult {
   topic: string;
   genre: string;
+  isFallback?: boolean; // フォールバックお題かどうか
 }
 
 // お題を生成する（リトライ機能付き）
@@ -195,7 +196,7 @@ export const generateTopic = async (): Promise<TopicResult> => {
         // 最後の試行も失敗したらフォールバック
         const fallback = fallbackTopics[Math.floor(Math.random() * fallbackTopics.length)];
         console.log('Using fallback topic:', fallback);
-        return fallback;
+        return { ...fallback, isFallback: true };
       }
     }
   }
