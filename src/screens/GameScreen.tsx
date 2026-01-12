@@ -14,7 +14,7 @@ import {
   Linking,
 } from 'react-native';
 import { colors, spacing, borderRadius, typography, shadows } from '../constants/theme';
-import { generateTopic, scoreAnswer, ScoreResult, SCORING_CRITERIA, TopicResult } from '../services/geminiService';
+import { generateTopic, scoreAnswer, scoreTopic, saveUserTopic, ScoreResult, SCORING_CRITERIA, TopicResult, TopicScoreResult } from '../services/geminiService';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import {
@@ -34,6 +34,7 @@ export const GameScreen = ({ route, navigation }: any) => {
   const [currentTopic, setCurrentTopic] = useState<string>('');
   const [currentGenre, setCurrentGenre] = useState<string>('');
   const [isFallbackTopic, setIsFallbackTopic] = useState<boolean>(false);
+  const [isUserSubmittedTopic, setIsUserSubmittedTopic] = useState<boolean>(false);
   const [answer, setAnswer] = useState<string>('');
   const [result, setResult] = useState<ScoreResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -43,6 +44,10 @@ export const GameScreen = ({ route, navigation }: any) => {
   const [nicknameId, setNicknameId] = useState<string | null>(null);
   const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [showCriteriaModal, setShowCriteriaModal] = useState(false);
+  const [showTopicSubmitModal, setShowTopicSubmitModal] = useState(false);
+  const [userTopicInput, setUserTopicInput] = useState('');
+  const [topicScoreResult, setTopicScoreResult] = useState<TopicScoreResult | null>(null);
+  const [topicScoring, setTopicScoring] = useState(false);
   const startTimeRef = useRef<number | null>(null);
   const { user } = useAuth();
 
@@ -229,11 +234,13 @@ export const GameScreen = ({ route, navigation }: any) => {
         topic = result.topic;
         genre = result.genre;
         setIsFallbackTopic(result.isFallback || false);
+        setIsUserSubmittedTopic(result.isUserSubmitted || false);
       }
       setCurrentTopic(topic);
       setCurrentGenre(genre);
       if (challengeTopic) {
         setIsFallbackTopic(false);
+        setIsUserSubmittedTopic(false);
       }
       setPhase('answering');
       setAnswer('');
@@ -246,6 +253,44 @@ export const GameScreen = ({ route, navigation }: any) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // お題を採点する
+  const handleScoreTopic = async () => {
+    if (!userTopicInput.trim()) {
+      return;
+    }
+    setTopicScoring(true);
+    setTopicScoreResult(null);
+    try {
+      const result = await scoreTopic(userTopicInput.trim());
+      setTopicScoreResult(result);
+    } catch (err) {
+      console.error('お題採点エラー:', err);
+      setTopicScoreResult({
+        score: 0,
+        comment: '採点に失敗しました',
+        suggestedGenre: 'その他',
+      });
+    } finally {
+      setTopicScoring(false);
+    }
+  };
+
+  // 高得点お題を保存
+  const handleSaveUserTopic = async () => {
+    if (!topicScoreResult || topicScoreResult.score < 80) {
+      return;
+    }
+    await saveUserTopic({
+      topic: userTopicInput.trim(),
+      genre: topicScoreResult.suggestedGenre,
+      isUserSubmitted: true,
+    });
+    // モーダルを閉じてリセット
+    setShowTopicSubmitModal(false);
+    setUserTopicInput('');
+    setTopicScoreResult(null);
   };
 
   const handleSubmitAnswer = async () => {
@@ -401,7 +446,104 @@ https://www.ogirihub.com/`;
       >
         <Text style={styles.photoModeButtonText}>📷 写真で一言モード</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.submitTopicButton}
+        onPress={() => setShowTopicSubmitModal(true)}
+      >
+        <Text style={styles.submitTopicButtonText}>✏️ お題を投稿する</Text>
+      </TouchableOpacity>
     </View>
+  );
+
+  // お題投稿モーダル
+  const renderTopicSubmitModal = () => (
+    <Modal
+      visible={showTopicSubmitModal}
+      transparent
+      animationType="fade"
+      onRequestClose={() => {
+        setShowTopicSubmitModal(false);
+        setUserTopicInput('');
+        setTopicScoreResult(null);
+      }}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.topicSubmitModalContent}>
+          <Text style={styles.modalTitle}>お題を投稿</Text>
+          <Text style={styles.topicSubmitDescription}>
+            AIがお題を採点します。80点以上でストックに追加されます！
+          </Text>
+
+          <TextInput
+            style={styles.topicSubmitInput}
+            placeholder="例: こんな医者は嫌だ。どんな医者？"
+            value={userTopicInput}
+            onChangeText={setUserTopicInput}
+            multiline
+            maxLength={100}
+          />
+
+          {!topicScoreResult ? (
+            <TouchableOpacity
+              style={[styles.primaryButton, (!userTopicInput.trim() || topicScoring) && styles.disabledButton]}
+              onPress={handleScoreTopic}
+              disabled={!userTopicInput.trim() || topicScoring}
+            >
+              {topicScoring ? (
+                <ActivityIndicator color={colors.textInverse} />
+              ) : (
+                <Text style={styles.primaryButtonText}>採点する</Text>
+              )}
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.topicScoreResultContainer}>
+              <View style={[
+                styles.topicScoreBadge,
+                topicScoreResult.score >= 80 ? styles.highScoreBadge : styles.lowScoreBadge
+              ]}>
+                <Text style={styles.topicScoreText}>{topicScoreResult.score}点</Text>
+              </View>
+              <Text style={styles.topicScoreComment}>{topicScoreResult.comment}</Text>
+              <Text style={styles.topicScoreGenre}>ジャンル: {topicScoreResult.suggestedGenre}</Text>
+
+              {topicScoreResult.score >= 80 ? (
+                <TouchableOpacity
+                  style={styles.saveTopicButton}
+                  onPress={handleSaveUserTopic}
+                >
+                  <Text style={styles.saveTopicButtonText}>ストックに追加する</Text>
+                </TouchableOpacity>
+              ) : (
+                <Text style={styles.lowScoreHint}>
+                  80点以上でストックに追加できます。お題を改善してみましょう！
+                </Text>
+              )}
+
+              <TouchableOpacity
+                style={styles.retryTopicButton}
+                onPress={() => {
+                  setTopicScoreResult(null);
+                }}
+              >
+                <Text style={styles.retryTopicButtonText}>別のお題を入力</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <TouchableOpacity
+            style={styles.closeModalButton}
+            onPress={() => {
+              setShowTopicSubmitModal(false);
+              setUserTopicInput('');
+              setTopicScoreResult(null);
+            }}
+          >
+            <Text style={styles.closeModalButtonText}>閉じる</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
   );
 
   const renderAnsweringScreen = () => (
@@ -418,7 +560,11 @@ https://www.ogirihub.com/`;
                 <Text style={styles.genreBadgeText}>{currentGenre}</Text>
               </View>
             ) : null}
-            {isFallbackTopic ? (
+            {isUserSubmittedTopic ? (
+              <View style={styles.userSubmittedBadge}>
+                <Text style={styles.userSubmittedBadgeText}>投稿</Text>
+              </View>
+            ) : isFallbackTopic ? (
               <View style={styles.fallbackBadge}>
                 <Text style={styles.fallbackBadgeText}>ストック</Text>
               </View>
@@ -499,7 +645,11 @@ https://www.ogirihub.com/`;
               <Text style={styles.genreBadgeText}>{currentGenre}</Text>
             </View>
           ) : null}
-          {isFallbackTopic ? (
+          {isUserSubmittedTopic ? (
+            <View style={styles.userSubmittedBadge}>
+              <Text style={styles.userSubmittedBadgeText}>投稿</Text>
+            </View>
+          ) : isFallbackTopic ? (
             <View style={styles.fallbackBadge}>
               <Text style={styles.fallbackBadgeText}>ストック</Text>
             </View>
@@ -678,6 +828,7 @@ https://www.ogirihub.com/`;
       </View>
 
       {renderCriteriaModal()}
+      {renderTopicSubmitModal()}
     </View>
   );
 };
@@ -840,6 +991,17 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.round,
   },
   aiBadgeText: {
+    ...typography.caption,
+    color: colors.textInverse,
+    fontWeight: 'bold',
+  },
+  userSubmittedBadge: {
+    backgroundColor: '#10B981',
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.round,
+  },
+  userSubmittedBadgeText: {
     ...typography.caption,
     color: colors.textInverse,
     fontWeight: 'bold',
@@ -1187,5 +1349,117 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: spacing.xs,
     lineHeight: 20,
+  },
+  // お題投稿関連のスタイル
+  submitTopicButton: {
+    marginTop: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.round,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: colors.textLight,
+  },
+  submitTopicButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    lineHeight: 20,
+  },
+  topicSubmitModalContent: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.xl,
+    maxWidth: 400,
+    width: '100%',
+    ...shadows.lg,
+  },
+  topicSubmitDescription: {
+    ...typography.body,
+    color: colors.textSecondary,
+    marginBottom: spacing.lg,
+    textAlign: 'center',
+  },
+  topicSubmitInput: {
+    backgroundColor: colors.background,
+    borderWidth: 2,
+    borderColor: colors.border,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    ...typography.body,
+    minHeight: 80,
+    textAlignVertical: 'top',
+    marginBottom: spacing.lg,
+  },
+  topicScoreResultContainer: {
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  topicScoreBadge: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xl,
+    borderRadius: borderRadius.round,
+    marginBottom: spacing.md,
+  },
+  highScoreBadge: {
+    backgroundColor: '#10B981',
+  },
+  lowScoreBadge: {
+    backgroundColor: colors.textLight,
+  },
+  topicScoreText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.textInverse,
+  },
+  topicScoreComment: {
+    ...typography.body,
+    color: colors.text,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  topicScoreGenre: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    marginBottom: spacing.lg,
+  },
+  saveTopicButton: {
+    backgroundColor: '#10B981',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    borderRadius: borderRadius.round,
+    marginBottom: spacing.md,
+    ...shadows.sm,
+  },
+  saveTopicButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.textInverse,
+  },
+  lowScoreHint: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.md,
+  },
+  retryTopicButton: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+  },
+  retryTopicButtonText: {
+    ...typography.body,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  closeModalButton: {
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
+  },
+  closeModalButtonText: {
+    ...typography.body,
+    color: colors.textLight,
   },
 });

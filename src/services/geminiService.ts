@@ -30,6 +30,14 @@ export interface TopicResult {
   topic: string;
   genre: string;
   isFallback?: boolean; // フォールバックお題かどうか
+  isUserSubmitted?: boolean; // ユーザー投稿お題かどうか
+}
+
+// お題採点結果
+export interface TopicScoreResult {
+  score: number;
+  comment: string;
+  suggestedGenre: string;
 }
 
 // ストック用のお題（ジャンル付き）- 500個
@@ -591,11 +599,137 @@ const fallbackTopics: TopicResult[] = [
   { topic: 'お金持ちになったら絶対にやりたくないこととは？', genre: 'お金' },
 ];
 
+// ユーザー投稿お題のストレージキー
+const USER_TOPICS_STORAGE_KEY = '@ogirihub_user_topics';
+
+// ユーザー投稿お題を取得
+export const getUserTopics = async (): Promise<TopicResult[]> => {
+  try {
+    // Web環境ではlocalStorageを使用
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const stored = localStorage.getItem(USER_TOPICS_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    }
+    return [];
+  } catch (error) {
+    console.error('ユーザー投稿お題の取得エラー:', error);
+    return [];
+  }
+};
+
+// ユーザー投稿お題を保存
+export const saveUserTopic = async (topic: TopicResult): Promise<void> => {
+  try {
+    const existing = await getUserTopics();
+    // 重複チェック
+    if (existing.some(t => t.topic === topic.topic)) {
+      console.log('Topic already exists:', topic.topic);
+      return;
+    }
+    const updated = [...existing, { ...topic, isUserSubmitted: true }];
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem(USER_TOPICS_STORAGE_KEY, JSON.stringify(updated));
+    }
+    console.log('Saved user topic:', topic.topic);
+  } catch (error) {
+    console.error('ユーザー投稿お題の保存エラー:', error);
+  }
+};
+
+// お題を採点する（80点以上で保存可能）
+export const scoreTopic = async (topicText: string): Promise<TopicScoreResult> => {
+  const prompt = `大喜利のお題を採点してください。JSONのみ出力。
+
+お題：${topicText}
+
+採点基準（100点満点）:
+- 回答の幅（40点）: 多様な面白い回答ができるか
+- 明確さ（30点）: 何を答えればいいか明確か
+- 独創性（20点）: ありきたりでない新鮮なお題か
+- 文章の完成度（10点）: 日本語として自然で完結しているか
+
+ジャンル候補: 職業, 商品・サービス, 未来・SF, 日常生活, 動物, 食べ物, イベント, テクノロジー, スポーツ, 学校, 恋愛, 家族, 芸能・エンタメ, 架空の設定, 言葉遊び, 歴史・偉人, 乗り物, お金, その他
+
+{"score":数字0-100,"comment":"良い点や改善点を30字以内","suggestedGenre":"最適なジャンル1つ"}`;
+
+  try {
+    const apiKey = getApiKey();
+    console.log('Calling Gemini API for topic scoring...');
+
+    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [{ text: prompt }],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 200,
+        },
+      }),
+    });
+
+    const data: GeminiResponse = await response.json();
+
+    if (!response.ok) {
+      console.error('Gemini API error response:', data);
+      throw new Error(`API error: ${response.status} - ${data.error?.message || 'Unknown error'}`);
+    }
+
+    const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
+    if (!resultText) {
+      console.error('Empty topic score response:', data);
+      throw new Error('お題の採点に失敗しました');
+    }
+
+    console.log('Topic score result text:', resultText);
+
+    // JSONをパース
+    let jsonStr = resultText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const startIndex = jsonStr.indexOf('{');
+    const endIndex = jsonStr.lastIndexOf('}');
+    if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+      jsonStr = jsonStr.substring(startIndex, endIndex + 1);
+    }
+
+    let result: TopicScoreResult;
+    try {
+      result = JSON.parse(jsonStr);
+    } catch (parseError) {
+      console.log('JSON parse failed, trying manual extraction...');
+      const scoreMatch = resultText.match(/"score"\s*:\s*(\d+)/);
+      const commentMatch = resultText.match(/"comment"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+      const genreMatch = resultText.match(/"suggestedGenre"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+
+      result = {
+        score: scoreMatch ? parseInt(scoreMatch[1], 10) : 50,
+        comment: commentMatch ? commentMatch[1].replace(/\\"/g, '"') : '採点完了',
+        suggestedGenre: genreMatch ? genreMatch[1].replace(/\\"/g, '"') : 'その他',
+      };
+    }
+
+    result.score = Math.max(0, Math.min(100, Math.round(result.score)));
+    return result;
+  } catch (error) {
+    console.error('Gemini API error:', error);
+    throw error;
+  }
+};
+
 export const generateTopic = async (): Promise<TopicResult> => {
-  // ストックからランダムに選択（500個のお題から）
-  const topic = fallbackTopics[Math.floor(Math.random() * fallbackTopics.length)];
-  console.log('Selected topic:', topic);
-  return { ...topic, isFallback: true };
+  // ユーザー投稿お題とストックお題を合わせて選択
+  const userTopics = await getUserTopics();
+  const allTopics = [...fallbackTopics, ...userTopics];
+
+  const topic = allTopics[Math.floor(Math.random() * allTopics.length)];
+  console.log('Selected topic:', topic, 'isUserSubmitted:', topic.isUserSubmitted);
+  return { ...topic, isFallback: !topic.isUserSubmitted };
 };
 
 // 回答を採点する
