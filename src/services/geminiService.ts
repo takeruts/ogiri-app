@@ -71,27 +71,29 @@ const generateTopicOnce = async (): Promise<TopicResult> => {
   // ランダムにジャンルを選択
   const category = topicCategories[Math.floor(Math.random() * topicCategories.length)];
   const format = topicFormats[Math.floor(Math.random() * topicFormats.length)];
-  const randomSeed = Math.floor(Math.random() * 10000);
   // 例からランダムに2つ選ぶ
   const shuffledExamples = [...category.examples].sort(() => Math.random() - 0.5);
 
-  const prompt = `大喜利のお題を1つだけ生成。
+  const prompt = `あなたは日本語の大喜利のお題を作る専門家です。
 
-ジャンル：${category.theme}
-形式の参考：${format}
-ランダムシード：${randomSeed}
+【タスク】
+日本語で大喜利のお題を1つだけ生成してください。
 
-ルール：
-- 例とは全く違う、独創的で新しいお題にすること
-- 短く簡潔に（30文字以内推奨）
-- 必ず「？」で終わること
-- お題だけを出力、説明不要
+【条件】
+- ジャンル：${category.theme}
+- 形式の参考：${format}
+- 必ず日本語で書くこと（英語禁止）
+- 必ず完全な文にすること（途中で終わらない）
+- 必ず「？」で終わる疑問文にすること
+- 短く簡潔に（20〜40文字程度）
+- 例とは違う独創的なお題にすること
+- お題だけを1行で出力（説明不要）
 
-例（参考のみ、これと同じにしないこと）：
+【参考例】
 ・${shuffledExamples[0]}
 ・${shuffledExamples[1]}
 
-お題：`;
+【出力】`;
 
   const apiKey = getApiKey();
   const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
