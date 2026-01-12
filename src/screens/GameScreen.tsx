@@ -14,7 +14,7 @@ import {
   Linking,
 } from 'react-native';
 import { colors, spacing, borderRadius, typography, shadows } from '../constants/theme';
-import { generateTopic, scoreAnswer, scoreTopic, saveUserTopic, ScoreResult, SCORING_CRITERIA, TopicResult, TopicScoreResult } from '../services/geminiService';
+import { generateTopic, scoreAnswer, scoreTopic, saveUserTopic, TOPIC_SCORE_THRESHOLD, ScoreResult, SCORING_CRITERIA, TopicResult, TopicScoreResult } from '../services/geminiService';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import {
@@ -35,6 +35,8 @@ export const GameScreen = ({ route, navigation }: any) => {
   const [currentGenre, setCurrentGenre] = useState<string>('');
   const [isFallbackTopic, setIsFallbackTopic] = useState<boolean>(false);
   const [isUserSubmittedTopic, setIsUserSubmittedTopic] = useState<boolean>(false);
+  const [topicSubmittedBy, setTopicSubmittedBy] = useState<string | undefined>();
+  const [topicOriginalScore, setTopicOriginalScore] = useState<number | undefined>();
   const [answer, setAnswer] = useState<string>('');
   const [result, setResult] = useState<ScoreResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -235,12 +237,16 @@ export const GameScreen = ({ route, navigation }: any) => {
         genre = result.genre;
         setIsFallbackTopic(result.isFallback || false);
         setIsUserSubmittedTopic(result.isUserSubmitted || false);
+        setTopicSubmittedBy(result.submittedBy);
+        setTopicOriginalScore(result.topicScore);
       }
       setCurrentTopic(topic);
       setCurrentGenre(genre);
       if (challengeTopic) {
         setIsFallbackTopic(false);
         setIsUserSubmittedTopic(false);
+        setTopicSubmittedBy(undefined);
+        setTopicOriginalScore(undefined);
       }
       setPhase('answering');
       setAnswer('');
@@ -277,16 +283,19 @@ export const GameScreen = ({ route, navigation }: any) => {
     }
   };
 
-  // 高得点お題を保存
+  // 高得点お題を保存（86点以上）
   const handleSaveUserTopic = async () => {
-    if (!topicScoreResult || topicScoreResult.score < 80) {
+    if (!topicScoreResult || topicScoreResult.score < TOPIC_SCORE_THRESHOLD) {
       return;
     }
-    await saveUserTopic({
-      topic: userTopicInput.trim(),
-      genre: topicScoreResult.suggestedGenre,
-      isUserSubmitted: true,
-    });
+    await saveUserTopic(
+      {
+        topic: userTopicInput.trim(),
+        genre: topicScoreResult.suggestedGenre,
+      },
+      nickname, // 投稿者のニックネーム
+      topicScoreResult.score // お題のスコア
+    );
     // モーダルを閉じてリセット
     setShowTopicSubmitModal(false);
     setUserTopicInput('');
@@ -472,7 +481,7 @@ https://www.ogirihub.com/`;
         <View style={styles.topicSubmitModalContent}>
           <Text style={styles.modalTitle}>お題を投稿</Text>
           <Text style={styles.topicSubmitDescription}>
-            AIがお題を採点します。80点以上でストックに追加されます！
+            AIがお題を採点します。{TOPIC_SCORE_THRESHOLD}点以上でストックに追加されます！
           </Text>
 
           <TextInput
@@ -500,7 +509,7 @@ https://www.ogirihub.com/`;
             <View style={styles.topicScoreResultContainer}>
               <View style={[
                 styles.topicScoreBadge,
-                topicScoreResult.score >= 80 ? styles.highScoreBadge : styles.lowScoreBadge
+                topicScoreResult.score >= TOPIC_SCORE_THRESHOLD ? styles.highScoreBadge : styles.lowScoreBadge
               ]}>
                 <Text style={styles.topicScoreText}>{topicScoreResult.score}点</Text>
               </View>
@@ -510,7 +519,7 @@ https://www.ogirihub.com/`;
               </View>
               <Text style={styles.topicScoreGenre}>ジャンル: {topicScoreResult.suggestedGenre}</Text>
 
-              {topicScoreResult.score >= 80 ? (
+              {topicScoreResult.score >= TOPIC_SCORE_THRESHOLD ? (
                 <TouchableOpacity
                   style={styles.saveTopicButton}
                   onPress={handleSaveUserTopic}
@@ -519,7 +528,7 @@ https://www.ogirihub.com/`;
                 </TouchableOpacity>
               ) : (
                 <Text style={styles.lowScoreHint}>
-                  80点以上でストックに追加できます。お題を改善してみましょう！
+                  {TOPIC_SCORE_THRESHOLD}点以上でストックに追加できます。お題を改善してみましょう！
                 </Text>
               )}
 
@@ -580,6 +589,11 @@ https://www.ogirihub.com/`;
         </View>
         <View style={styles.topicCardSmall}>
           <Text style={styles.topicTextSmall}>{currentTopic}</Text>
+          {isUserSubmittedTopic && topicSubmittedBy && (
+            <Text style={styles.topicSubmitterInfo}>
+              投稿: {topicSubmittedBy} ({topicOriginalScore}点)
+            </Text>
+          )}
         </View>
 
         <Text style={styles.phaseLabel}>あなたの回答</Text>
@@ -665,6 +679,11 @@ https://www.ogirihub.com/`;
       </View>
       <View style={styles.topicCardSmall}>
         <Text style={styles.topicTextSmall}>{currentTopic}</Text>
+        {isUserSubmittedTopic && topicSubmittedBy && (
+          <Text style={styles.topicSubmitterInfo}>
+            投稿: {topicSubmittedBy} ({topicOriginalScore}点)
+          </Text>
+        )}
       </View>
 
       <Text style={styles.phaseLabel}>あなたの回答</Text>
@@ -1023,6 +1042,12 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontWeight: '600',
     lineHeight: 24,
+  },
+  topicSubmitterInfo: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: spacing.sm,
+    textAlign: 'right',
   },
   answerInput: {
     backgroundColor: colors.surface,

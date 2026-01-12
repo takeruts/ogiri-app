@@ -31,6 +31,8 @@ export interface TopicResult {
   genre: string;
   isFallback?: boolean; // フォールバックお題かどうか
   isUserSubmitted?: boolean; // ユーザー投稿お題かどうか
+  submittedBy?: string; // 投稿者のニックネーム
+  topicScore?: number; // お題の採点スコア
 }
 
 // お題採点結果
@@ -617,8 +619,14 @@ export const getUserTopics = async (): Promise<TopicResult[]> => {
   }
 };
 
-// ユーザー投稿お題を保存
-export const saveUserTopic = async (topic: TopicResult): Promise<void> => {
+// ユーザー投稿お題を保存（86点以上でストック可能）
+export const TOPIC_SCORE_THRESHOLD = 86;
+
+export const saveUserTopic = async (
+  topic: TopicResult,
+  submittedBy: string,
+  topicScore: number
+): Promise<void> => {
   try {
     const existing = await getUserTopics();
     // 重複チェック
@@ -626,11 +634,17 @@ export const saveUserTopic = async (topic: TopicResult): Promise<void> => {
       console.log('Topic already exists:', topic.topic);
       return;
     }
-    const updated = [...existing, { ...topic, isUserSubmitted: true }];
+    const newTopic: TopicResult = {
+      ...topic,
+      isUserSubmitted: true,
+      submittedBy,
+      topicScore,
+    };
+    const updated = [...existing, newTopic];
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem(USER_TOPICS_STORAGE_KEY, JSON.stringify(updated));
     }
-    console.log('Saved user topic:', topic.topic);
+    console.log('Saved user topic:', topic.topic, 'by:', submittedBy, 'score:', topicScore);
   } catch (error) {
     console.error('ユーザー投稿お題の保存エラー:', error);
   }
