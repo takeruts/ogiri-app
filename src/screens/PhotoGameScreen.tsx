@@ -239,7 +239,7 @@ https://www.ogirihub.com/
             <Image
               source={{ uri: currentPhoto.url }}
               style={styles.photo}
-              resizeMode="cover"
+              resizeMode="contain"
             />
             <TouchableOpacity
               onPress={() => Linking.openURL(currentPhoto.photographerUrl)}
@@ -305,7 +305,7 @@ https://www.ogirihub.com/
           <Image
             source={{ uri: currentPhoto.url }}
             style={styles.photoSmall}
-            resizeMode="cover"
+            resizeMode="contain"
           />
         </View>
       )}
@@ -512,11 +512,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
     borderRadius: borderRadius.md,
     overflow: 'hidden',
+    backgroundColor: colors.surfaceHover,
     ...shadows.md,
   },
   photo: {
     width: '100%',
-    height: 250,
+    aspectRatio: 16 / 9,
     backgroundColor: colors.surfaceHover,
   },
   photoCredit: {
@@ -530,11 +531,13 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     borderRadius: borderRadius.md,
     overflow: 'hidden',
+    backgroundColor: colors.surfaceHover,
     ...shadows.sm,
   },
   photoSmall: {
     width: '100%',
-    height: 150,
+    aspectRatio: 16 / 9,
+    maxHeight: 180,
     backgroundColor: colors.surfaceHover,
   },
   phaseLabel: {
