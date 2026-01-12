@@ -706,16 +706,23 @@ suggestedGenre: 上記ジャンルから1つ選択`;
     let result: TopicScoreResult;
     try {
       result = JSON.parse(jsonStr);
+      console.log('JSON parse success:', result);
     } catch (parseError) {
-      console.log('JSON parse failed, trying manual extraction...');
+      console.log('JSON parse failed, jsonStr was:', jsonStr);
+      console.log('Trying manual extraction from:', resultText);
+
+      // より柔軟な正規表現（日本語対応）
       const scoreMatch = resultText.match(/"score"\s*:\s*(\d+)/);
-      const commentMatch = resultText.match(/"comment"\s*:\s*"((?:[^"\\]|\\.)*)"/);
-      const genreMatch = resultText.match(/"suggestedGenre"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+      // コメントは " から次の " まで（改行を含まない）
+      const commentMatch = resultText.match(/"comment"\s*:\s*"([^"]*)"/);
+      const genreMatch = resultText.match(/"suggestedGenre"\s*:\s*"([^"]*)"/);
+
+      console.log('Manual extraction - score:', scoreMatch?.[1], 'comment:', commentMatch?.[1], 'genre:', genreMatch?.[1]);
 
       result = {
         score: scoreMatch ? parseInt(scoreMatch[1], 10) : 50,
-        comment: commentMatch ? commentMatch[1].replace(/\\"/g, '"') : '採点完了',
-        suggestedGenre: genreMatch ? genreMatch[1].replace(/\\"/g, '"') : 'その他',
+        comment: commentMatch ? commentMatch[1] : `お題として${scoreMatch ? (parseInt(scoreMatch[1], 10) >= 80 ? '良い' : '改善の余地あり') : '評価中'}`,
+        suggestedGenre: genreMatch ? genreMatch[1] : 'その他',
       };
     }
 
