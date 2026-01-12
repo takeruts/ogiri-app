@@ -94,9 +94,22 @@ export const GameScreen = ({ route, navigation }: any) => {
           }
         }
 
-        // 3. auth.usersのメタデータから取得
+        // 3. auth.usersのメタデータから取得（メール登録時のnickname）
         if (!displayName && user.user_metadata?.nickname) {
           displayName = user.user_metadata.nickname;
+        }
+
+        // 4. Googleログイン時の名前を取得
+        if (!displayName && user.user_metadata?.full_name) {
+          displayName = user.user_metadata.full_name;
+        }
+        if (!displayName && user.user_metadata?.name) {
+          displayName = user.user_metadata.name;
+        }
+
+        // 5. メールアドレスからユーザー名を生成（最終手段）
+        if (!displayName && user.email) {
+          displayName = user.email.split('@')[0];
         }
 
         if (displayName) {
