@@ -24,7 +24,8 @@
       "Bash(copy publicogirihub_logo.png assetsogirihub_logo.png)",
       "Bash(curl:*)",
       "Bash(ls:*)",
-      "Bash(copy \"c:\\\\Users\\\\taker\\\\ogiri-app\\\\assets\\\\ogirihub_logo.png\" \"c:\\\\Users\\\\taker\\\\ogiri-app\\\\assets\\\\logo.png\")"
+      "Bash(copy \"c:\\\\Users\\\\taker\\\\ogiri-app\\\\assets\\\\ogirihub_logo.png\" \"c:\\\\Users\\\\taker\\\\ogiri-app\\\\assets\\\\logo.png\")",
+      "Bash(git reset:*)"
     ]
   }
 }

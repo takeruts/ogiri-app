@@ -418,11 +418,15 @@ https://www.ogirihub.com/`;
                 <Text style={styles.genreBadgeText}>{currentGenre}</Text>
               </View>
             ) : null}
-            {isFallbackTopic && (
+            {isFallbackTopic ? (
               <View style={styles.fallbackBadge}>
                 <Text style={styles.fallbackBadgeText}>ストック</Text>
               </View>
-            )}
+            ) : currentTopic ? (
+              <View style={styles.aiBadge}>
+                <Text style={styles.aiBadgeText}>AI</Text>
+              </View>
+            ) : null}
           </View>
         </View>
         <View style={styles.topicCardSmall}>
@@ -495,11 +499,15 @@ https://www.ogirihub.com/`;
               <Text style={styles.genreBadgeText}>{currentGenre}</Text>
             </View>
           ) : null}
-          {isFallbackTopic && (
+          {isFallbackTopic ? (
             <View style={styles.fallbackBadge}>
               <Text style={styles.fallbackBadgeText}>ストック</Text>
             </View>
-          )}
+          ) : currentTopic ? (
+            <View style={styles.aiBadge}>
+              <Text style={styles.aiBadgeText}>AI</Text>
+            </View>
+          ) : null}
         </View>
       </View>
       <View style={styles.topicCardSmall}>
@@ -821,6 +829,17 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.round,
   },
   fallbackBadgeText: {
+    ...typography.caption,
+    color: colors.textInverse,
+    fontWeight: 'bold',
+  },
+  aiBadge: {
+    backgroundColor: '#8B5CF6',
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.round,
+  },
+  aiBadgeText: {
     ...typography.caption,
     color: colors.textInverse,
     fontWeight: 'bold',
