@@ -17,7 +17,14 @@
       "Bash(git push:*)",
       "Bash(npx tsc:*)",
       "Bash(timeout:*)",
-      "Bash(npm start:*)"
+      "Bash(npm start:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(tasklist:*)",
+      "Bash(copy publicogirihub_logo.png assetsogirihub_logo.png)",
+      "Bash(curl:*)",
+      "Bash(ls:*)",
+      "Bash(copy \"c:\\\\Users\\\\taker\\\\ogiri-app\\\\assets\\\\ogirihub_logo.png\" \"c:\\\\Users\\\\taker\\\\ogiri-app\\\\assets\\\\logo.png\")"
     ]
   }
 }

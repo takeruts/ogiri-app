@@ -3,69 +3,63 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  
+
   <!-- SEO Meta Tags -->
-  <title>オオギリハブ - みんなで楽しむお題と回答投稿コミュニティ</title>
-  <meta name="description" content="オオギリハブは、面白いお題を投稿したり、お題に対して回答を投稿できるソーシャルアプリです。いいね機能とランキングで人気の回答を見つけよう！iOS、Android、Webで利用可能。">
-  <meta name="keywords" content="オオギリハブ,大喜利,お題,回答,面白い,コミュニティ,SNS,投稿,ランキング,いいね,モバイルアプリ">
-  <meta name="author" content="オオギリハブ開発チーム">
+  <title>壁打ちオオギリ - AIと大喜利練習</title>
+  <meta name="description" content="壁打ちオオギリは、AIが出すお題に挑戦して大喜利の腕を磨けるアプリです。AIが採点してヒントもくれる！一人でも楽しく大喜利練習。">
+  <meta name="keywords" content="壁打ちオオギリ,大喜利,AI,お題,回答,練習,採点,ヒント,一人,トレーニング">
+  <meta name="author" content="壁打ちオオギリ開発チーム">
   <meta name="robots" content="index, follow">
-  
+
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.ogirihub.com/">
-  <meta property="og:title" content="オオギリハブ - みんなで楽しむお題と回答投稿コミュニティ">
-  <meta property="og:description" content="面白いお題を投稿したり、お題に対して回答を投稿できるソーシャルアプリ。いいね機能とランキングで人気の回答を見つけよう！">
+  <meta property="og:title" content="壁打ちオオギリ - AIと大喜利練習">
+  <meta property="og:description" content="AIが出すお題に挑戦して大喜利の腕を磨こう！AIが採点してヒントもくれる！">
   <meta property="og:image" content="https://www.ogirihub.com/og-image.png">
-  <meta property="og:site_name" content="オオギリハブ">
+  <meta property="og:site_name" content="壁打ちオオギリ">
   <meta property="og:locale" content="ja_JP">
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://www.ogirihub.com/">
-  <meta name="twitter:title" content="オオギリハブ - みんなで楽しむお題と回答投稿コミュニティ">
-  <meta name="twitter:description" content="面白いお題を投稿したり、お題に対して回答を投稿できるソーシャルアプリ。いいね機能とランキングで人気の回答を見つけよう！">
+  <meta name="twitter:title" content="壁打ちオオギリ - AIと大喜利練習">
+  <meta name="twitter:description" content="AIが出すお題に挑戦して大喜利の腕を磨こう！AIが採点してヒントもくれる！">
   <meta name="twitter:image" content="https://www.ogirihub.com/og-image.png">
-  
+
   <!-- Favicon -->
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link rel="apple-touch-icon" href="/logo.png">
+
   <!-- Theme Color -->
   <meta name="theme-color" content="#007AFF">
   <meta name="msapplication-TileColor" content="#007AFF">
-  
+
   <!-- Canonical URL -->
   <link rel="canonical" href="https://www.ogirihub.com/">
-  
+
   <!-- Structured Data (JSON-LD) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    "name": "オオギリハブ",
+    "name": "壁打ちオオギリ",
     "url": "https://www.ogirihub.com",
-    "description": "面白いお題を投稿したり、お題に対して回答を投稿できるソーシャルアプリ",
-    "applicationCategory": "SocialNetworkingApplication",
+    "description": "AIが出すお題に挑戦して大喜利の腕を磨けるアプリ",
+    "applicationCategory": "EntertainmentApplication",
     "operatingSystem": "iOS, Android, Web",
     "offers": {
       "@type": "Offer",
       "price": "0",
       "priceCurrency": "JPY"
     },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.5",
-      "ratingCount": "100"
-    },
     "author": {
       "@type": "Organization",
-      "name": "オオギリハブ開発チーム"
+      "name": "壁打ちオオギリ開発チーム"
     }
   }
   </script>
-  
+
   <style>
     body {
       margin: 0;
@@ -76,13 +70,13 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
-    
+
     #root {
       display: flex;
       height: 100vh;
       overflow: hidden;
     }
-    
+
     /* Loading screen */
     .loading-container {
       display: flex;
@@ -92,7 +86,7 @@
       height: 100vh;
       background-color: #f5f5f5;
     }
-    
+
     .loading-spinner {
       width: 50px;
       height: 50px;
@@ -101,12 +95,12 @@
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
-    
+
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-    
+
     .loading-text {
       margin-top: 20px;
       color: #666;

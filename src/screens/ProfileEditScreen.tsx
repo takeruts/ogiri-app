@@ -58,37 +58,61 @@ export const ProfileEditScreen = ({ navigation }: any) => {
 
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('username')
+        .from('user_profiles')
+        .select('display_name')
         .eq('id', user.id)
         .single();
 
-      if (error) throw error;
+      if (error && error.code !== 'PGRST116') throw error; // PGRST116 = not found
 
-      setUsername(data.username || '');
+      setUsername(data?.display_name || '');
       setEmail(user.email || '');
     } catch (error: any) {
       console.error('プロフィール取得エラー:', error);
-      showAlert('エラー', 'プロフィール情報の取得に失敗しました');
+      // エラーでも続行（新規ユーザーの場合）
+      setEmail(user.email || '');
     }
   };
 
   const handleUpdateUsername = async () => {
     if (!username.trim()) {
-      showAlert('エラー', 'ユーザー名を入力してください');
+      showAlert('エラー', 'ニックネームを入力してください');
       return;
     }
 
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ username: username.trim() })
-        .eq('id', user!.id);
+      // まず既存のプロファイルがあるか確認
+      const { data: existing } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('id', user!.id)
+        .single();
 
-      if (error) throw error;
+      if (existing) {
+        // 既存のプロファイルを更新
+        const { error } = await supabase
+          .from('user_profiles')
+          .update({
+            display_name: username.trim(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', user!.id);
 
-      showAlert('成功', 'ユーザー名を更新しました');
+        if (error) throw error;
+      } else {
+        // 新規プロファイルを作成
+        const { error } = await supabase
+          .from('user_profiles')
+          .insert({
+            id: user!.id,
+            display_name: username.trim()
+          });
+
+        if (error) throw error;
+      }
+
+      showAlert('成功', 'ニックネームを更新しました');
     } catch (error: any) {
       showAlert('エラー', error.message);
     } finally {
@@ -182,22 +206,24 @@ export const ProfileEditScreen = ({ navigation }: any) => {
       style={styles.container}
     >
       <ScrollView style={styles.content}>
-        {/* ユーザー名セクション */}
+        {/* ニックネームセクション */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>ユーザー名</Text>
+          <Text style={styles.sectionTitle}>ニックネーム</Text>
+          <Text style={styles.helpText}>ランキングに表示される名前です</Text>
           <TextInput
             style={styles.input}
-            placeholder="ユーザー名"
+            placeholder="ニックネーム"
             value={username}
             onChangeText={setUsername}
             autoCapitalize="none"
+            maxLength={20}
           />
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleUpdateUsername}
             disabled={loading}
           >
-            <Text style={styles.buttonText}>ユーザー名を更新</Text>
+            <Text style={styles.buttonText}>ニックネームを更新</Text>
           </TouchableOpacity>
         </View>
 
@@ -314,7 +340,12 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     ...typography.h3,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.sm,
+  },
+  helpText: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
   },
   currentEmail: {
     ...typography.bodySmall,

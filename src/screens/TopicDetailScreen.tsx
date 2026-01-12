@@ -380,7 +380,13 @@ export const TopicDetailScreen = ({ route, navigation }: any) => {
 
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => navigation.navigate('CreateAnswer', { topicId })}
+        onPress={() => {
+          if (!user) {
+            navigation.navigate('MyPage');
+          } else {
+            navigation.navigate('CreateAnswer', { topicId });
+          }
+        }}
       >
         <Text style={styles.fabIcon}>+</Text>
         <Text style={styles.fabLabel}>回答する</Text>
@@ -408,6 +414,7 @@ const styles = StyleSheet.create({
   topicTitle: {
     ...typography.h2,
     marginBottom: spacing.md,
+    flexShrink: 1,
   },
   topicImage: {
     width: '100%',
@@ -528,24 +535,28 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    right: spacing.xl,
-    bottom: spacing.xl,
+    right: spacing.lg,
+    bottom: spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.xxl,
+    justifyContent: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: spacing.md,
     borderRadius: borderRadius.round,
     backgroundColor: colors.accent,
     ...shadows.lg,
   },
   fabIcon: {
-    fontSize: 24,
+    fontSize: 16,
     color: colors.textInverse,
     fontWeight: 'bold',
-    marginRight: spacing.sm,
+    marginRight: spacing.xs,
+    lineHeight: 16,
   },
   fabLabel: {
-    ...typography.button,
+    fontSize: 14,
+    fontWeight: '600',
     color: colors.textInverse,
+    lineHeight: 16,
   },
 });

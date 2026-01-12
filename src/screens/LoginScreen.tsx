@@ -41,7 +41,7 @@ export const LoginScreen = () => {
       style={styles.container}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>オオギリハブ</Text>
+        <Text style={styles.title}>壁打ちオオギリ</Text>
         <Text style={styles.subtitle}>ログイン</Text>
 
         <TextInput

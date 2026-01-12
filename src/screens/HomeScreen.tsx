@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   RefreshControl,
+  Image,
 } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -128,6 +129,24 @@ export const HomeScreen = ({ navigation }: any) => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Image
+          source={require('../../assets/logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Text style={styles.headerTitle}>オオギリハブ</Text>
+      </View>
+      {!user && (
+        <TouchableOpacity
+          style={styles.loginPrompt}
+          onPress={() => navigation.navigate('MyPage')}
+        >
+          <Text style={styles.loginPromptText}>
+            <Text style={styles.loginLink}>ログイン</Text>してお題や回答を投稿しよう！
+          </Text>
+        </TouchableOpacity>
+      )}
       <FlatList
         data={topics}
         renderItem={renderTopic}
@@ -146,7 +165,13 @@ export const HomeScreen = ({ navigation }: any) => {
 
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => navigation.navigate('CreateTopic')}
+        onPress={() => {
+          if (!user) {
+            navigation.navigate('MyPage');
+          } else {
+            navigation.navigate('CreateTopic');
+          }
+        }}
       >
         <Text style={styles.fabIcon}>+</Text>
         <Text style={styles.fabLabel}>お題を投稿</Text>
@@ -159,6 +184,45 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  header: {
+    backgroundColor: colors.surface,
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.xxl,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.border,
+    ...shadows.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.md,
+  },
+  logo: {
+    width: 40,
+    height: 40,
+  },
+  headerTitle: {
+    ...typography.h2,
+    color: colors.primary,
+    fontWeight: 'bold',
+  },
+  loginPrompt: {
+    backgroundColor: colors.primarySoft,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xl,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primary,
+    ...shadows.sm,
+  },
+  loginPromptText: {
+    ...typography.body,
+    color: colors.primary,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  loginLink: {
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
   },
   topicCard: {
     backgroundColor: colors.surface,
@@ -173,6 +237,7 @@ const styles = StyleSheet.create({
   topicTitle: {
     ...typography.h3,
     marginBottom: spacing.sm,
+    flexShrink: 1,
   },
   topicDescription: {
     ...typography.body,
@@ -225,24 +290,28 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    right: spacing.xl,
-    bottom: spacing.xl,
+    right: spacing.lg,
+    bottom: spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.xxl,
+    justifyContent: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: spacing.md,
     borderRadius: borderRadius.round,
     backgroundColor: colors.accent,
     ...shadows.lg,
   },
   fabIcon: {
-    fontSize: 24,
+    fontSize: 16,
     color: colors.textInverse,
     fontWeight: 'bold',
-    marginRight: spacing.sm,
+    marginRight: spacing.xs,
+    lineHeight: 16,
   },
   fabLabel: {
-    ...typography.button,
+    fontSize: 14,
+    fontWeight: '600',
     color: colors.textInverse,
+    lineHeight: 16,
   },
 });

@@ -56,7 +56,7 @@ export const SignUpScreen = () => {
       style={styles.container}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>オオギリハブ</Text>
+        <Text style={styles.title}>壁打ちオオギリ</Text>
         <Text style={styles.subtitle}>新規登録</Text>
 
         <TextInput

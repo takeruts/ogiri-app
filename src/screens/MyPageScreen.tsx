@@ -8,6 +8,7 @@ import {
   RefreshControl,
   Alert,
   Platform,
+  Image,
 } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -36,96 +37,69 @@ const showAlert = (title: string, message: string) => {
   }
 };
 
-type TabType = 'topics' | 'answers';
-
-interface Topic {
+interface HistoryItem {
   id: string;
-  title: string;
-  likes_count: number;
-  dislikes_count: number;
+  topic: string;
+  answer: string;
+  score: number;
+  comment: string;
   created_at: string;
 }
 
-interface Answer {
-  id: string;
-  content: string;
-  likes_count: number;
-  dislikes_count: number;
-  created_at: string;
-  topics: {
-    title: string;
-  };
+interface UserStats {
+  totalGames: number;
+  totalScore: number;
+  averageScore: number;
+  bestScore: number;
 }
 
 export const MyPageScreen = ({ navigation }: any) => {
-  const [activeTab, setActiveTab] = useState<TabType>('topics');
-  const [topics, setTopics] = useState<Topic[]>([]);
-  const [answers, setAnswers] = useState<Answer[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const { user, signOut } = useAuth();
 
-  const fetchMyTopics = async () => {
+  const fetchData = async () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('topics')
+      // 履歴を取得
+      const { data: historyData, error: historyError } = await supabase
+        .from('game_history')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(20);
 
-      if (error) throw error;
-      setTopics(data || []);
+      if (historyError) throw historyError;
+      setHistory(historyData || []);
+
+      // 統計を計算
+      if (historyData && historyData.length > 0) {
+        const totalGames = historyData.length;
+        const totalScore = historyData.reduce((sum, item) => sum + item.score, 0);
+        const averageScore = totalScore / totalGames;
+        const bestScore = Math.max(...historyData.map((item) => item.score));
+
+        setStats({
+          totalGames,
+          totalScore,
+          averageScore: Math.round(averageScore * 10) / 10,
+          bestScore,
+        });
+      }
     } catch (error) {
-      console.error('お題取得エラー:', error);
+      console.error('データ取得エラー:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
-  };
-
-  const fetchMyAnswers = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('answers')
-        .select('*, topics(title)')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setAnswers(data || []);
-    } catch (error) {
-      console.error('回答取得エラー:', error);
-    }
-  };
-
-  const checkAdminStatus = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', user.id)
-        .single();
-
-      if (error) throw error;
-      setIsAdmin(data?.is_admin || false);
-    } catch (error) {
-      console.error('管理者確認エラー:', error);
-    }
-  };
-
-  const fetchData = async () => {
-    await Promise.all([fetchMyTopics(), fetchMyAnswers(), checkAdminStatus()]);
-    setLoading(false);
-    setRefreshing(false);
   };
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [user]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -146,121 +120,106 @@ export const MyPageScreen = ({ navigation }: any) => {
     );
   };
 
-  const renderTopic = ({ item }: { item: Topic }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => navigation.navigate('TopicDetail', { topicId: item.id })}
-    >
-      <Text style={styles.cardTitle}>{item.title}</Text>
-      <View style={styles.cardFooter}>
-        <Text style={styles.date}>
-          {new Date(item.created_at).toLocaleDateString('ja-JP')}
-        </Text>
-        <View style={styles.reactions}>
-          <Text style={styles.reactionText}>👍 {item.likes_count}</Text>
-          <Text style={styles.reactionText}>👎 {item.dislikes_count}</Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return '#FFD700';
+    if (score >= 60) return '#4CAF50';
+    if (score >= 40) return '#2196F3';
+    return '#FF5722';
+  };
 
-  const renderAnswer = ({ item }: { item: Answer }) => (
-    <TouchableOpacity style={styles.card}>
-      <Text style={styles.topicTitle}>{item.topics.title}</Text>
-      <Text style={styles.answerContent}>{item.content}</Text>
-      <View style={styles.cardFooter}>
-        <Text style={styles.date}>
-          {new Date(item.created_at).toLocaleDateString('ja-JP')}
+  const renderHistoryItem = ({ item }: { item: HistoryItem }) => (
+    <View style={styles.historyCard}>
+      <View style={styles.cardHeader}>
+        <Text style={styles.cardDate}>
+          {new Date(item.created_at).toLocaleDateString('ja-JP', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
         </Text>
-        <View style={styles.reactions}>
-          <Text style={styles.reactionText}>👍 {item.likes_count}</Text>
-          <Text style={styles.reactionText}>👎 {item.dislikes_count}</Text>
+        <View style={[styles.scoreBadge, { backgroundColor: getScoreColor(item.score) }]}>
+          <Text style={styles.scoreBadgeText}>{item.score}点</Text>
         </View>
       </View>
-    </TouchableOpacity>
+      <Text style={styles.topicText} numberOfLines={2}>{item.topic}</Text>
+      <Text style={styles.answerLabel}>回答</Text>
+      <Text style={styles.answerText} numberOfLines={2}>{item.answer}</Text>
+    </View>
   );
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.username}>{user?.email}</Text>
-        <View style={styles.headerButtons}>
+        <Image
+          source={require('../../assets/logo.png')}
+          style={styles.headerLogo}
+          resizeMode="contain"
+        />
+        <Text style={styles.headerTitle}>マイページ</Text>
+      </View>
+
+      <View style={styles.profileSection}>
+        <Text style={styles.email}>{user?.email}</Text>
+        <View style={styles.buttonRow}>
           <TouchableOpacity
             style={styles.editButton}
             onPress={() => navigation.navigate('ProfileEdit')}
           >
             <Text style={styles.editButtonText}>編集</Text>
           </TouchableOpacity>
-          {isAdmin && (
-            <TouchableOpacity
-              style={styles.adminButton}
-              onPress={() => navigation.navigate('Admin')}
-            >
-              <Text style={styles.adminButtonText}>管理者</Text>
-            </TouchableOpacity>
-          )}
           <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
             <Text style={styles.logoutButtonText}>ログアウト</Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      <View style={styles.stats}>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{topics.length}</Text>
-          <Text style={styles.statLabel}>投稿したお題</Text>
+      {stats && (
+        <View style={styles.statsContainer}>
+          <View style={styles.statRow}>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>{stats.totalGames}</Text>
+              <Text style={styles.statLabel}>挑戦数</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>{stats.totalScore}</Text>
+              <Text style={styles.statLabel}>総合得点</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>{stats.averageScore}</Text>
+              <Text style={styles.statLabel}>平均点</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={[styles.statNumber, { color: '#FFD700' }]}>{stats.bestScore}</Text>
+              <Text style={styles.statLabel}>最高点</Text>
+            </View>
+          </View>
         </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{answers.length}</Text>
-          <Text style={styles.statLabel}>投稿した回答</Text>
-        </View>
-      </View>
+      )}
 
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'topics' && styles.tabActive]}
-          onPress={() => setActiveTab('topics')}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === 'topics' && styles.tabTextActive,
-            ]}
-          >
-            投稿したお題
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'answers' && styles.tabActive]}
-          onPress={() => setActiveTab('answers')}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === 'answers' && styles.tabTextActive,
-            ]}
-          >
-            投稿した回答
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <Text style={styles.sectionTitle}>最近の履歴</Text>
 
       <FlatList
-        data={activeTab === 'topics' ? topics : answers}
-        renderItem={activeTab === 'topics' ? renderTopic : renderAnswer}
+        data={history}
+        renderItem={renderHistoryItem}
         keyExtractor={(item) => item.id}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
+        contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>
-              {loading
-                ? '読み込み中...'
-                : activeTab === 'topics'
-                ? 'まだお題を投稿していません'
-                : 'まだ回答を投稿していません'}
+              {loading ? '読み込み中...' : 'まだ挑戦履歴がありません'}
             </Text>
+            {!loading && (
+              <TouchableOpacity
+                style={styles.homeButton}
+                onPress={() => navigation.navigate('Game')}
+              >
+                <Text style={styles.homeButtonText}>壁打ちオオギリへ</Text>
+              </TouchableOpacity>
+            )}
           </View>
         }
       />
@@ -275,21 +234,39 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.surface,
-    padding: spacing.xxl,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xl,
     borderBottomWidth: 2,
     borderBottomColor: colors.border,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.md,
     ...shadows.sm,
   },
-  username: {
-    ...typography.h3,
-    flex: 1,
+  headerLogo: {
+    width: 36,
+    height: 36,
   },
-  headerButtons: {
+  headerTitle: {
+    ...typography.h2,
+    color: colors.primary,
+    fontWeight: 'bold',
+  },
+  profileSection: {
+    backgroundColor: colors.surface,
+    padding: spacing.xl,
+    marginBottom: spacing.md,
+    ...shadows.sm,
+  },
+  email: {
+    ...typography.body,
+    color: colors.text,
+    marginBottom: spacing.md,
+  },
+  buttonRow: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   editButton: {
     paddingHorizontal: spacing.lg,
@@ -299,18 +276,6 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   editButtonText: {
-    ...typography.bodySmall,
-    color: colors.textInverse,
-    fontWeight: 'bold',
-  },
-  adminButton: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.primary,
-    borderRadius: borderRadius.md,
-    ...shadows.sm,
-  },
-  adminButtonText: {
     ...typography.bodySmall,
     color: colors.textInverse,
     fontWeight: 'bold',
@@ -327,99 +292,81 @@ const styles = StyleSheet.create({
     color: colors.textInverse,
     fontWeight: 'bold',
   },
-  stats: {
-    flexDirection: 'row',
-    backgroundColor: colors.surface,
-    padding: spacing.xxl,
-    marginBottom: spacing.md,
-    ...shadows.sm,
-  },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-  },
-  statNumber: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: colors.primary,
-    marginBottom: spacing.xs,
-  },
-  statLabel: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderBottomWidth: 2,
-    borderBottomColor: colors.border,
-    ...shadows.sm,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.md,
-    alignItems: 'center',
-  },
-  tabActive: {
-    borderBottomWidth: 3,
-    borderBottomColor: colors.primary,
-  },
-  tabText: {
-    ...typography.body,
-    color: colors.textLight,
-  },
-  tabTextActive: {
-    ...typography.body,
-    color: colors.primary,
-    fontWeight: 'bold',
-  },
-  card: {
+  statsContainer: {
     backgroundColor: colors.surface,
     padding: spacing.xl,
-    marginHorizontal: spacing.lg,
-    marginVertical: spacing.md,
-    borderRadius: borderRadius.lg,
-    ...shadows.md,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  cardTitle: {
-    ...typography.body,
-    fontWeight: '600',
     marginBottom: spacing.md,
-    lineHeight: 22,
+    ...shadows.sm,
   },
-  topicTitle: {
-    ...typography.bodySmall,
-    fontWeight: '600',
-    marginBottom: spacing.sm,
+  statRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.primary,
+  },
+  statLabel: {
+    ...typography.caption,
     color: colors.textSecondary,
+    marginTop: spacing.xs,
   },
-  answerContent: {
-    ...typography.body,
+  sectionTitle: {
+    ...typography.h3,
+    color: colors.text,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  listContent: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xxl,
+  },
+  historyCard: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.md,
+    padding: spacing.lg,
     marginBottom: spacing.md,
-    lineHeight: 24,
+    ...shadows.sm,
   },
-  cardFooter: {
+  cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: spacing.xs,
+    marginBottom: spacing.sm,
   },
-  date: {
+  cardDate: {
     ...typography.caption,
     color: colors.textLight,
   },
-  reactions: {
-    flexDirection: 'row',
-    gap: spacing.md,
+  scoreBadge: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.round,
   },
-  reactionText: {
+  scoreBadgeText: {
+    ...typography.bodySmall,
+    color: colors.textInverse,
+    fontWeight: 'bold',
+  },
+  topicText: {
+    ...typography.body,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: spacing.sm,
+  },
+  answerLabel: {
+    ...typography.caption,
+    color: colors.primary,
+    marginBottom: spacing.xs,
+  },
+  answerText: {
     ...typography.bodySmall,
     color: colors.textSecondary,
-    fontWeight: '600',
   },
   emptyContainer: {
     padding: spacing.xxl,
@@ -428,5 +375,17 @@ const styles = StyleSheet.create({
   emptyText: {
     ...typography.body,
     color: colors.textLight,
+  },
+  homeButton: {
+    marginTop: spacing.xl,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.primary,
+    borderRadius: borderRadius.round,
+  },
+  homeButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textInverse,
   },
 });
