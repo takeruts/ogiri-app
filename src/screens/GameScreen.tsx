@@ -11,6 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Modal,
+  Linking,
 } from 'react-native';
 import { colors, spacing, borderRadius, typography, shadows } from '../constants/theme';
 import { generateTopic, scoreAnswer, ScoreResult, SCORING_CRITERIA, TopicResult } from '../services/geminiService';
@@ -288,6 +289,31 @@ export const GameScreen = ({ route, navigation }: any) => {
     setError(null);
   };
 
+  const handleShareToX = () => {
+    if (!result) return;
+
+    const emoji = getScoreEmoji(result.score);
+    const text = `【壁打ちオオギリ】${emoji} ${result.score}点！
+
+お題：${currentTopic}
+回答：${answer}
+
+💬 ${result.comment}
+
+💡 ${result.hint}
+
+AIと大喜利の練習ができる「壁打ちオオギリ」
+あなたも挑戦してみよう！👇
+https://www.ogirihub.com/
+
+#壁打ちオオギリ #大喜利 #AI採点`;
+
+    const encodedText = encodeURIComponent(text);
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodedText}`;
+
+    Linking.openURL(twitterUrl);
+  };
+
   const getScoreColor = (score: number) => {
     if (score >= 80) return '#FFD700';
     if (score >= 60) return '#4CAF50';
@@ -489,6 +515,10 @@ export const GameScreen = ({ route, navigation }: any) => {
           </View>
         </>
       )}
+
+      <TouchableOpacity style={styles.shareButton} onPress={handleShareToX}>
+        <Text style={styles.shareButtonText}>𝕏 で結果をシェア</Text>
+      </TouchableOpacity>
 
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.secondaryButton} onPress={handleRetry}>
@@ -893,6 +923,22 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     backgroundColor: colors.textLight,
+  },
+  shareButton: {
+    backgroundColor: '#000000',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    borderRadius: borderRadius.round,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.lg,
+    ...shadows.md,
+  },
+  shareButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    lineHeight: 22,
   },
   loadingText: {
     ...typography.h3,
