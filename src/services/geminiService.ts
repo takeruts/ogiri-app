@@ -201,6 +201,118 @@ export const SCORING_CRITERIA = {
   ],
 };
 
+// 写真で一言の採点（画像URLと回答を送信）
+export const scorePhotoAnswer = async (imageUrl: string, answer: string): Promise<ScoreResult> => {
+  const prompt = `写真で一言の大喜利を採点してください。
+この写真に対する「一言」回答を評価します。JSONのみ出力してください。
+
+回答：${answer}
+
+採点基準（100点満点）:
+- 意外性・裏切り（40点）: 写真から予想できない面白い解釈か
+- 笑いのインパクト（30点）: 思わず笑える破壊力
+- 写真との関連性（20点）: 写真の状況を活かしているか
+- 表現の巧みさ（10点）: 言葉選び、簡潔さ
+
+{"score":数字0-100,"comment":"面白い点や足りない点を30字以内","hint":"この写真でウケるコツを50字以内"}`;
+
+  try {
+    const apiKey = getApiKey();
+    console.log('Calling Gemini API for photo scoring...');
+
+    // 画像をBase64に変換するか、URLを直接使用
+    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                inline_data: {
+                  mime_type: 'image/jpeg',
+                  data: await fetchImageAsBase64(imageUrl),
+                },
+              },
+              { text: prompt },
+            ],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 1000,
+        },
+      }),
+    });
+
+    const data: GeminiResponse = await response.json();
+
+    if (!response.ok) {
+      console.error('Gemini API error response:', data);
+      throw new Error(`API error: ${response.status} - ${data.error?.message || 'Unknown error'}`);
+    }
+
+    const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
+    if (!resultText) {
+      console.error('Empty score response:', data);
+      throw new Error('採点結果の生成に失敗しました');
+    }
+
+    console.log('Photo score result text:', resultText);
+
+    // JSONをパース
+    let jsonStr = resultText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const startIndex = jsonStr.indexOf('{');
+    const endIndex = jsonStr.lastIndexOf('}');
+    if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+      jsonStr = jsonStr.substring(startIndex, endIndex + 1);
+    }
+
+    let result: ScoreResult;
+    try {
+      result = JSON.parse(jsonStr);
+    } catch (parseError) {
+      console.log('JSON parse failed, trying manual extraction...');
+      const scoreMatch = resultText.match(/"score"\s*:\s*(\d+)/);
+      const commentMatch = resultText.match(/"comment"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+      const hintMatch = resultText.match(/"hint"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+
+      result = {
+        score: scoreMatch ? parseInt(scoreMatch[1], 10) : 5,
+        comment: commentMatch ? commentMatch[1].replace(/\\"/g, '"') : '採点完了',
+        hint: hintMatch ? hintMatch[1].replace(/\\"/g, '"') : '写真の状況を活かしてみましょう！',
+      };
+    }
+
+    result.score = Math.max(0, Math.min(100, Math.round(result.score)));
+    return result;
+  } catch (error) {
+    console.error('Gemini API error:', error);
+    throw error;
+  }
+};
+
+// 画像URLからBase64を取得するヘルパー関数
+const fetchImageAsBase64 = async (url: string): Promise<string> => {
+  const response = await fetch(url);
+  const blob = await response.blob();
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      // data:image/jpeg;base64, の部分を除去
+      const base64Data = base64.split(',')[1];
+      resolve(base64Data);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
+
 export const scoreAnswer = async (topic: string, answer: string): Promise<ScoreResult> => {
   const prompt = `大喜利採点。JSONのみ出力。
 

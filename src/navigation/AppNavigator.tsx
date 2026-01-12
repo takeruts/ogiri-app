@@ -6,6 +6,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useAuth } from '../contexts/AuthContext';
 
 import { GameScreen } from '../screens/GameScreen';
+import { PhotoGameScreen } from '../screens/PhotoGameScreen';
 import { HistoryScreen } from '../screens/HistoryScreen';
 import { AuthScreen } from '../screens/AuthScreen';
 import { MyPageScreen } from '../screens/MyPageScreen';
@@ -93,6 +94,13 @@ export const AppNavigator = () => {
           options={{
             headerShown: true,
             title: 'プロフィール編集'
+          }}
+        />
+        <Stack.Screen
+          name="PhotoGame"
+          component={PhotoGameScreen}
+          options={{
+            headerShown: false,
           }}
         />
       </Stack.Navigator>

@@ -396,6 +396,13 @@ https://www.ogirihub.com/
           </Text>
         )}
       </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.photoModeButton}
+        onPress={() => navigation.navigate('PhotoGame')}
+      >
+        <Text style={styles.photoModeButtonText}>📷 写真で一言モード</Text>
+      </TouchableOpacity>
     </View>
   );
 
@@ -932,6 +939,22 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.primary,
     lineHeight: 24,
+  },
+  photoModeButton: {
+    marginTop: spacing.lg,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    borderRadius: borderRadius.round,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.secondary,
+    ...shadows.sm,
+  },
+  photoModeButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.textInverse,
+    lineHeight: 22,
   },
   disabledButton: {
     backgroundColor: colors.textLight,
