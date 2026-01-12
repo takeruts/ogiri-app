@@ -638,7 +638,7 @@ export const saveUserTopic = async (topic: TopicResult): Promise<void> => {
 
 // お題を採点する（80点以上で保存可能）
 export const scoreTopic = async (topicText: string): Promise<TopicScoreResult> => {
-  const prompt = `大喜利のお題を採点してください。JSONのみ出力。
+  const prompt = `大喜利のお題を採点してください。
 
 お題：${topicText}
 
@@ -650,7 +650,12 @@ export const scoreTopic = async (topicText: string): Promise<TopicScoreResult> =
 
 ジャンル候補: 職業, 商品・サービス, 未来・SF, 日常生活, 動物, 食べ物, イベント, テクノロジー, スポーツ, 学校, 恋愛, 家族, 芸能・エンタメ, 架空の設定, 言葉遊び, 歴史・偉人, 乗り物, お金, その他
 
-{"score":数字0-100,"comment":"この点数になった理由を50字以内で具体的に説明（良い点・改善点を含める）","suggestedGenre":"最適なジャンル1つ"}`;
+以下のJSON形式で出力してください：
+{"score": 85, "comment": "回答の幅が広く、様々な角度から面白い答えが出せる良いお題。", "suggestedGenre": "日常生活"}
+
+score: 0-100の数字
+comment: この点数になった理由（良い点や改善点を含めて30-50字）
+suggestedGenre: 上記ジャンルから1つ選択`;
 
   try {
     const apiKey = getApiKey();
@@ -668,8 +673,8 @@ export const scoreTopic = async (topicText: string): Promise<TopicScoreResult> =
           },
         ],
         generationConfig: {
-          temperature: 0.3,
-          maxOutputTokens: 200,
+          temperature: 0.5,
+          maxOutputTokens: 500,
         },
       }),
     });
