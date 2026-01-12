@@ -160,11 +160,50 @@ export interface ScoreResult {
   hint: string;
 }
 
+// 採点基準（UIでも表示するためexport）
+export const SCORING_CRITERIA = {
+  title: '採点基準',
+  description: 'AIは以下の観点で0〜100点で採点します',
+  criteria: [
+    {
+      name: '意外性・裏切り',
+      weight: '40点',
+      description: '予想外の角度からの回答、期待を良い意味で裏切る発想',
+    },
+    {
+      name: '笑いのインパクト',
+      weight: '30点',
+      description: '思わず笑ってしまう破壊力、クスッとくる面白さ',
+    },
+    {
+      name: 'お題との関連性',
+      weight: '20点',
+      description: 'お題の意図を理解し、的確に応えているか',
+    },
+    {
+      name: '表現の巧みさ',
+      weight: '10点',
+      description: '言葉選び、テンポ、簡潔さなどの表現力',
+    },
+  ],
+  tips: [
+    '王道の回答より、少しズラした視点が高得点のコツ',
+    '長い説明より、短く切れ味のある回答を',
+    'お題のキーワードを活かしつつ、予想外の展開を',
+  ],
+};
+
 export const scoreAnswer = async (topic: string, answer: string): Promise<ScoreResult> => {
   const prompt = `大喜利採点。JSONのみ出力。
 
 お題：${topic}
 回答：${answer}
+
+採点基準（100点満点）:
+- 意外性・裏切り（40点）: 予想外の角度からの回答か
+- 笑いのインパクト（30点）: 思わず笑える破壊力
+- お題との関連性（20点）: お題の意図を理解しているか
+- 表現の巧みさ（10点）: 言葉選び、簡潔さ
 
 {"score":数字0-100,"comment":"面白い点や足りない点を30字以内","hint":"お題の狙いと高得点のコツを50字以内"}`;
 

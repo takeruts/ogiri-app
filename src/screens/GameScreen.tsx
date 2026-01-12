@@ -10,15 +10,15 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  Modal,
 } from 'react-native';
 import { colors, spacing, borderRadius, typography, shadows } from '../constants/theme';
-import { generateTopic, scoreAnswer, ScoreResult } from '../services/geminiService';
+import { generateTopic, scoreAnswer, ScoreResult, SCORING_CRITERIA } from '../services/geminiService';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import {
   getNicknameInfo,
   registerNickname,
-  checkNicknameAvailable,
 } from '../services/nicknameService';
 
 type GamePhase = 'nickname' | 'start' | 'answering' | 'scoring' | 'result';
@@ -28,7 +28,7 @@ interface ChallengeTopic {
   source: 'random' | 'popular' | 'ranking';
 }
 
-export const GameScreen = ({ route }: any) => {
+export const GameScreen = ({ route, navigation }: any) => {
   const [phase, setPhase] = useState<GamePhase>('nickname');
   const [currentTopic, setCurrentTopic] = useState<string>('');
   const [answer, setAnswer] = useState<string>('');
@@ -38,9 +38,8 @@ export const GameScreen = ({ route }: any) => {
   const [answerTime, setAnswerTime] = useState<number | null>(null);
   const [nickname, setNickname] = useState<string>('');
   const [nicknameId, setNicknameId] = useState<string | null>(null);
-  const [nicknameInput, setNicknameInput] = useState<string>('');
   const [nicknameError, setNicknameError] = useState<string | null>(null);
-  const [checkingNickname, setCheckingNickname] = useState(false);
+  const [showCriteriaModal, setShowCriteriaModal] = useState(false);
   const startTimeRef = useRef<number | null>(null);
   const { user } = useAuth();
 
@@ -55,76 +54,68 @@ export const GameScreen = ({ route }: any) => {
   const checkExistingNickname = async () => {
     setLoading(true);
     try {
-      const info = await getNicknameInfo(user?.id);
-      if (info) {
-        setNickname(info.nickname);
-        setNicknameId(info.nicknameId);
+      // ログインユーザーの場合はuser_profilesからdisplay_nameを取得
+      if (user) {
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('display_name')
+          .eq('id', user.id)
+          .single();
+
+        if (profile?.display_name) {
+          // ニックネームテーブルにも登録されているか確認
+          const info = await getNicknameInfo(user.id);
+          if (info) {
+            setNickname(profile.display_name);
+            setNicknameId(info.nicknameId);
+            setPhase('start');
+          } else {
+            // ニックネームテーブルに未登録の場合は登録
+            const result = await registerNickname(profile.display_name, user.id);
+            if (result.success && result.nicknameId) {
+              setNickname(profile.display_name);
+              setNicknameId(result.nicknameId);
+              setPhase('start');
+            } else {
+              // 登録に失敗した場合（重複など）はプロフィール編集へ誘導
+              setNicknameError('プロフィールのニックネームが他のユーザーと重複しています。マイページから変更してください。');
+              setPhase('nickname');
+            }
+          }
+        } else {
+          // ログインしているがdisplay_nameが未設定の場合
+          setNicknameError('マイページでニックネームを設定してください');
+          setPhase('nickname');
+        }
+      } else {
+        // 匿名ユーザーはニックネーム不要、すぐにゲーム開始
+        setNickname('ゲスト');
+        setNicknameId(null);
+        setPhase('start');
+      }
+    } catch (err) {
+      console.error('ニックネーム確認エラー:', err);
+      // エラー時も匿名ユーザーはゲーム開始可能
+      if (!user) {
+        setNickname('ゲスト');
+        setNicknameId(null);
         setPhase('start');
       } else {
         setPhase('nickname');
       }
-    } catch (err) {
-      console.error('ニックネーム確認エラー:', err);
-      setPhase('nickname');
     } finally {
       setLoading(false);
     }
   };
 
-  // ニックネーム登録
-  const handleRegisterNickname = async () => {
-    const trimmedNickname = nicknameInput.trim();
-
-    if (!trimmedNickname) {
-      setNicknameError('ニックネームを入力してください');
-      return;
-    }
-
-    if (trimmedNickname.length < 2) {
-      setNicknameError('ニックネームは2文字以上で入力してください');
-      return;
-    }
-
-    if (trimmedNickname.length > 20) {
-      setNicknameError('ニックネームは20文字以内で入力してください');
-      return;
-    }
-
-    setCheckingNickname(true);
-    setNicknameError(null);
-
-    try {
-      // 重複チェック
-      const isAvailable = await checkNicknameAvailable(trimmedNickname);
-      if (!isAvailable) {
-        setNicknameError('このニックネームは既に使用されています');
-        setCheckingNickname(false);
-        return;
-      }
-
-      // 登録
-      const result = await registerNickname(trimmedNickname, user?.id);
-      if (result.success && result.nicknameId) {
-        setNickname(trimmedNickname);
-        setNicknameId(result.nicknameId);
-        setPhase('start');
-      } else {
-        setNicknameError(result.error || '登録に失敗しました');
-      }
-    } catch (err: any) {
-      setNicknameError(err.message || '登録に失敗しました');
-    } finally {
-      setCheckingNickname(false);
-    }
-  };
-
-  // 結果をSupabaseに保存
+  // 結果をSupabaseに保存（ログインユーザーのみ）
   const saveResult = async (topic: string, userAnswer: string, scoreResult: ScoreResult, time: number | null) => {
-    if (!nicknameId) return;
+    // ログインユーザーかつnicknameIdがある場合のみ保存
+    if (!user || !nicknameId) return;
 
     try {
       await supabase.from('game_history').insert({
-        user_id: user?.id || null,
+        user_id: user.id,
         nickname_id: nicknameId,
         topic: topic,
         answer: userAnswer,
@@ -227,56 +218,26 @@ export const GameScreen = ({ route }: any) => {
     return '💪';
   };
 
-  // ニックネーム入力画面
+  // ニックネーム設定画面（ログインユーザーでニックネーム未設定の場合のみ）
   const renderNicknameScreen = () => (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={styles.centerContent}>
-        <Image
-          source={require('../../assets/logo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-        <Text style={styles.title}>壁打ちオオギリ</Text>
-        <Text style={styles.subtitle}>ニックネームを設定</Text>
-        <Text style={styles.description}>
-          ランキングに表示される名前です{'\n'}
-          他のプレイヤーと同じ名前は使えません
-        </Text>
-
-        <View style={styles.nicknameInputContainer}>
-          <TextInput
-            style={[styles.nicknameInput, nicknameError && styles.inputError]}
-            placeholder="ニックネーム（2〜20文字）"
-            placeholderTextColor={colors.textLight}
-            value={nicknameInput}
-            onChangeText={(text) => {
-              setNicknameInput(text);
-              setNicknameError(null);
-            }}
-            maxLength={20}
-            autoCapitalize="none"
-          />
-          {nicknameError && (
-            <Text style={styles.nicknameErrorText}>{nicknameError}</Text>
-          )}
-        </View>
-
-        <TouchableOpacity
-          style={[styles.primaryButton, (!nicknameInput.trim() || checkingNickname) && styles.disabledButton]}
-          onPress={handleRegisterNickname}
-          disabled={!nicknameInput.trim() || checkingNickname}
-        >
-          {checkingNickname ? (
-            <ActivityIndicator color={colors.textInverse} />
-          ) : (
-            <Text style={styles.primaryButtonText}>はじめる</Text>
-          )}
-        </TouchableOpacity>
-      </ScrollView>
-    </KeyboardAvoidingView>
+    <View style={styles.centerContent}>
+      <Image
+        source={require('../../assets/logo.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+      <Text style={styles.title}>壁打ちオオギリ</Text>
+      <Text style={styles.subtitle}>ニックネームを設定してください</Text>
+      <Text style={styles.description}>
+        {nicknameError || 'マイページからニックネームを設定すると\nゲームを開始できます'}
+      </Text>
+      <TouchableOpacity
+        style={styles.primaryButton}
+        onPress={() => navigation.navigate('MyPage')}
+      >
+        <Text style={styles.primaryButtonText}>マイページへ</Text>
+      </TouchableOpacity>
+    </View>
   );
 
   const renderStartScreen = () => (
@@ -292,6 +253,17 @@ export const GameScreen = ({ route }: any) => {
         お題を出す → 回答する → AIが採点{'\n'}
         大喜利の腕を磨こう！
       </Text>
+
+      {!user ? (
+        <TouchableOpacity
+          style={styles.loginPrompt}
+          onPress={() => navigation.navigate('MyPage')}
+        >
+          <Text style={styles.loginPromptText}>
+            ログインすると履歴が残り、ランキングに参加できます
+          </Text>
+        </TouchableOpacity>
+      ) : null}
 
       {challengeTopic && (
         <View style={styles.challengeTopicBanner}>
@@ -421,6 +393,55 @@ export const GameScreen = ({ route }: any) => {
     </ScrollView>
   );
 
+  // 採点基準モーダル
+  const renderCriteriaModal = () => (
+    <Modal
+      visible={showCriteriaModal}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setShowCriteriaModal(false)}
+    >
+      <TouchableOpacity
+        style={styles.modalOverlay}
+        activeOpacity={1}
+        onPress={() => setShowCriteriaModal(false)}
+      >
+        <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>{SCORING_CRITERIA.title}</Text>
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowCriteriaModal(false)}
+            >
+              <Text style={styles.modalCloseText}>×</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.modalDescription}>{SCORING_CRITERIA.description}</Text>
+
+          <View style={styles.criteriaList}>
+            {SCORING_CRITERIA.criteria.map((item, index) => (
+              <View key={index} style={styles.criteriaItem}>
+                <View style={styles.criteriaHeader}>
+                  <Text style={styles.criteriaName}>{item.name}</Text>
+                  <Text style={styles.criteriaWeight}>{item.weight}</Text>
+                </View>
+                <Text style={styles.criteriaDescription}>{item.description}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.tipsSection}>
+            <Text style={styles.tipsTitle}>高得点のコツ</Text>
+            {SCORING_CRITERIA.tips.map((tip, index) => (
+              <Text key={index} style={styles.tipItem}>• {tip}</Text>
+            ))}
+          </View>
+        </View>
+      </TouchableOpacity>
+    </Modal>
+  );
+
   // ローディング中
   if (loading && phase === 'nickname') {
     return (
@@ -444,14 +465,22 @@ export const GameScreen = ({ route }: any) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.criteriaButton}
+          onPress={() => setShowCriteriaModal(true)}
+        >
+          <Text style={styles.criteriaButtonText}>採点基準</Text>
+        </TouchableOpacity>
         <Image
           source={require('../../assets/logo.png')}
           style={styles.headerLogo}
           resizeMode="contain"
         />
         <Text style={styles.headerTitle}>壁打ちオオギリ</Text>
-        {nickname && phase !== 'nickname' && (
+        {nickname && phase !== 'nickname' ? (
           <Text style={styles.headerNickname}>{nickname}</Text>
+        ) : (
+          <View style={styles.headerNicknamePlaceholder} />
         )}
       </View>
 
@@ -471,6 +500,8 @@ export const GameScreen = ({ route }: any) => {
         {phase === 'scoring' && renderScoringScreen()}
         {phase === 'result' && renderResultScreen()}
       </View>
+
+      {renderCriteriaModal()}
     </View>
   );
 };
@@ -551,28 +582,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: spacing.xxl,
-  },
-  nicknameInputContainer: {
-    width: '100%',
-    marginBottom: spacing.xl,
-  },
-  nicknameInput: {
-    backgroundColor: colors.surface,
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: borderRadius.md,
-    padding: spacing.lg,
-    ...typography.body,
-    textAlign: 'center',
-  },
-  inputError: {
-    borderColor: colors.error,
-  },
-  nicknameErrorText: {
-    ...typography.bodySmall,
-    color: colors.error,
-    marginTop: spacing.sm,
-    textAlign: 'center',
   },
   challengeTopicBanner: {
     backgroundColor: colors.primarySoft,
@@ -783,5 +792,125 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textLight,
     textDecorationLine: 'underline',
+  },
+  loginPrompt: {
+    backgroundColor: colors.primarySoft,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.xl,
+    borderWidth: 2,
+    borderColor: colors.primary,
+  },
+  loginPromptText: {
+    ...typography.body,
+    color: colors.primary,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  criteriaButton: {
+    position: 'absolute',
+    left: spacing.md,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    backgroundColor: colors.surfaceHover,
+    borderRadius: borderRadius.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  criteriaButtonText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontWeight: '600',
+  },
+  headerNicknamePlaceholder: {
+    width: 60,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.lg,
+  },
+  modalContent: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.xl,
+    maxWidth: 400,
+    width: '100%',
+    maxHeight: '80%',
+    ...shadows.lg,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  modalTitle: {
+    ...typography.h2,
+    color: colors.primary,
+  },
+  modalCloseButton: {
+    padding: spacing.sm,
+  },
+  modalCloseText: {
+    fontSize: 24,
+    color: colors.textLight,
+    fontWeight: 'bold',
+  },
+  modalDescription: {
+    ...typography.body,
+    color: colors.textSecondary,
+    marginBottom: spacing.lg,
+  },
+  criteriaList: {
+    marginBottom: spacing.lg,
+  },
+  criteriaItem: {
+    backgroundColor: colors.background,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.sm,
+  },
+  criteriaHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
+  criteriaName: {
+    ...typography.body,
+    fontWeight: 'bold',
+    color: colors.text,
+  },
+  criteriaWeight: {
+    ...typography.bodySmall,
+    color: colors.primary,
+    fontWeight: 'bold',
+  },
+  criteriaDescription: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+  },
+  tipsSection: {
+    backgroundColor: '#FFF9E6',
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    borderLeftWidth: 4,
+    borderLeftColor: '#FFB800',
+  },
+  tipsTitle: {
+    ...typography.bodySmall,
+    fontWeight: 'bold',
+    color: '#B88A00',
+    marginBottom: spacing.sm,
+  },
+  tipItem: {
+    ...typography.bodySmall,
+    color: colors.text,
+    marginBottom: spacing.xs,
+    lineHeight: 20,
   },
 });

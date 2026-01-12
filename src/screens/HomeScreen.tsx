@@ -137,16 +137,16 @@ export const HomeScreen = ({ navigation }: any) => {
         />
         <Text style={styles.headerTitle}>オオギリハブ</Text>
       </View>
-      {!user && (
+      {!user ? (
         <TouchableOpacity
           style={styles.loginPrompt}
           onPress={() => navigation.navigate('MyPage')}
         >
           <Text style={styles.loginPromptText}>
-            <Text style={styles.loginLink}>ログイン</Text>してお題や回答を投稿しよう！
+            ログインすると履歴が残り、ランキングに参加できます
           </Text>
         </TouchableOpacity>
-      )}
+      ) : null}
       <FlatList
         data={topics}
         renderItem={renderTopic}
@@ -219,10 +219,6 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: '600',
     textAlign: 'center',
-  },
-  loginLink: {
-    fontWeight: 'bold',
-    textDecorationLine: 'underline',
   },
   topicCard: {
     backgroundColor: colors.surface,
