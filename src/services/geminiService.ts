@@ -148,6 +148,38 @@ const generateTopicOnce = async (): Promise<TopicResult> => {
     topic = topic + '？';
   }
 
+  // バリデーション: 不完全なお題をチェック
+  const isValidTopic = (t: string): boolean => {
+    // 最低15文字以上（短すぎる＝途中で切れている可能性）
+    if (t.length < 15) {
+      console.log('Topic too short:', t.length, 'chars');
+      return false;
+    }
+    // 英語のみのお題は無効
+    if (/^[a-zA-Z0-9\s\?\.\!\,\'\"\-\(\)]+$/.test(t)) {
+      console.log('Topic is English only:', t);
+      return false;
+    }
+    // 「？」で終わっていない（？を追加した後なので、ここには来ないはず）
+    if (!t.endsWith('？') && !t.endsWith('?')) {
+      console.log('Topic does not end with ?:', t);
+      return false;
+    }
+    // 明らかに不完全な文（「、」や「を」「が」「に」「は」で終わる）
+    const incompleteEndings = ['、？', 'を？', 'が？', 'に？', 'は？', 'で？', 'と？', 'の？'];
+    for (const ending of incompleteEndings) {
+      if (t.endsWith(ending)) {
+        console.log('Topic has incomplete ending:', t);
+        return false;
+      }
+    }
+    return true;
+  };
+
+  if (!isValidTopic(topic)) {
+    throw new Error('不完全なお題が生成されました');
+  }
+
   return { topic, genre: category.theme };
 };
 
