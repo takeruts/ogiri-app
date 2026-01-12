@@ -1,24 +1,26 @@
-# robots.txt for オオギリハブ (Ogiri Hub)
+# robots.txt for 壁打ちオオギリ (Kabeuchi Ogiri)
+# https://www.ogirihub.com/
 
 User-agent: *
 Allow: /
 
-# Disallow admin pages
+# Disallow admin and internal pages
 Disallow: /admin/
 Disallow: /admin
-
-# Disallow API endpoints
 Disallow: /api/
+Disallow: /_next/
+Disallow: /static/chunks/
 
-# Allow search engines to crawl main pages
-Allow: /ranking
-Allow: /topics
-Allow: /about
-Allow: /terms
-Allow: /privacy
+# Googlebot specific
+User-agent: Googlebot
+Allow: /
+
+# Bingbot specific
+User-agent: Bingbot
+Allow: /
 
 # Sitemap location
 Sitemap: https://www.ogirihub.com/sitemap.xml
 
-# Crawl delay (optional)
+# Crawl delay (optional, be polite to crawlers)
 Crawl-delay: 1

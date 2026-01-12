@@ -1,52 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-  
-  <!-- Homepage -->
+
+  <!-- 壁打ちオオギリ (Kabeuchi Ogiri) - メインページ -->
   <url>
     <loc>https://www.ogirihub.com/</loc>
-    <lastmod>2026-01-01</lastmod>
+    <lastmod>2026-01-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://www.ogirihub.com/og-image.png</image:loc>
+      <image:title>壁打ちオオギリ - AIと大喜利練習</image:title>
+      <image:caption>AIが出すお題に挑戦して大喜利の腕を磨こう</image:caption>
+    </image:image>
   </url>
 
-  <!-- Main pages -->
+  <!-- 壁打ち（ゲーム）ページ -->
   <url>
-    <loc>https://www.ogirihub.com/ranking</loc>
-    <lastmod>2026-01-01</lastmod>
+    <loc>https://www.ogirihub.com/#/game</loc>
+    <lastmod>2026-01-12</lastmod>
     <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- 履歴・ランキングページ -->
+  <url>
+    <loc>https://www.ogirihub.com/#/history</loc>
+    <lastmod>2026-01-12</lastmod>
+    <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
 
+  <!-- マイページ（ログイン） -->
   <url>
-    <loc>https://www.ogirihub.com/topics</loc>
-    <lastmod>2026-01-01</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
+    <loc>https://www.ogirihub.com/#/mypage</loc>
+    <lastmod>2026-01-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
   </url>
 
-  <!-- Static pages -->
-  <url>
-    <loc>https://www.ogirihub.com/about</loc>
-    <lastmod>2026-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://www.ogirihub.com/terms</loc>
-    <lastmod>2026-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-  <url>
-    <loc>https://www.ogirihub.com/privacy</loc>
-    <lastmod>2026-01-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  
 </urlset>
