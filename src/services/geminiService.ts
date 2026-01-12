@@ -74,26 +74,21 @@ const generateTopicOnce = async (): Promise<TopicResult> => {
   // 例からランダムに2つ選ぶ
   const shuffledExamples = [...category.examples].sort(() => Math.random() - 0.5);
 
-  const prompt = `あなたは日本語の大喜利のお題を作る専門家です。
+  const prompt = `あなたは日本の大喜利番組の作家です。日本語だけで回答してください。
 
-【タスク】
-日本語で大喜利のお題を1つだけ生成してください。
+ジャンル「${category.theme}」で、${format}のお題を1つ作ってください。
 
-【条件】
-- ジャンル：${category.theme}
-- 形式の参考：${format}
-- 必ず日本語で書くこと（英語禁止）
-- 必ず完全な文にすること（途中で終わらない）
-- 必ず「？」で終わる疑問文にすること
-- 短く簡潔に（20〜40文字程度）
-- 例とは違う独創的なお題にすること
-- お題だけを1行で出力（説明不要）
+ルール：
+・日本語のみ（英語・ローマ字禁止）
+・「？」で終わる疑問文
+・20〜40文字
+・お題だけ出力
 
-【参考例】
-・${shuffledExamples[0]}
-・${shuffledExamples[1]}
+参考：
+${shuffledExamples[0]}
+${shuffledExamples[1]}
 
-【出力】`;
+お題：`;
 
   const apiKey = getApiKey();
   const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
@@ -153,6 +148,12 @@ const generateTopicOnce = async (): Promise<TopicResult> => {
     // 最低15文字以上（短すぎる＝途中で切れている可能性）
     if (t.length < 15) {
       console.log('Topic too short:', t.length, 'chars');
+      return false;
+    }
+    // 日本語（ひらがな・カタカナ・漢字）が含まれているか確認
+    const hasJapanese = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(t);
+    if (!hasJapanese) {
+      console.log('Topic has no Japanese characters:', t);
       return false;
     }
     // 英語のみのお題は無効
