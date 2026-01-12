@@ -21,7 +21,7 @@ import {
   registerNickname,
 } from '../services/nicknameService';
 
-type GamePhase = 'nickname' | 'start' | 'answering' | 'scoring' | 'result';
+type GamePhase = 'nickname' | 'start' | 'generating' | 'answering' | 'scoring' | 'result';
 
 interface ChallengeTopic {
   topic: string;
@@ -161,6 +161,7 @@ export const GameScreen = ({ route, navigation }: any) => {
   const handleGenerateTopic = async () => {
     setLoading(true);
     setError(null);
+    setPhase('generating');
     try {
       // チャレンジお題がある場合はそれを使用
       let topic: string;
@@ -185,6 +186,7 @@ export const GameScreen = ({ route, navigation }: any) => {
       startTimeRef.current = Date.now();
     } catch (err) {
       setError('お題の生成に失敗しました。もう一度お試しください。');
+      setPhase('start');
     } finally {
       setLoading(false);
     }
@@ -370,6 +372,19 @@ export const GameScreen = ({ route, navigation }: any) => {
     </KeyboardAvoidingView>
   );
 
+  const renderGeneratingScreen = () => (
+    <View style={styles.centerContent}>
+      <Image
+        source={require('../../assets/logo.png')}
+        style={styles.generatingLogo}
+        resizeMode="contain"
+      />
+      <ActivityIndicator size="large" color={colors.primary} style={styles.generatingSpinner} />
+      <Text style={styles.loadingText}>お題を考え中...</Text>
+      <Text style={styles.loadingSubtext}>AIがお題を生成しています</Text>
+    </View>
+  );
+
   const renderScoringScreen = () => (
     <View style={styles.centerContent}>
       <ActivityIndicator size="large" color={colors.primary} />
@@ -543,6 +558,7 @@ export const GameScreen = ({ route, navigation }: any) => {
       <View style={styles.content}>
         {phase === 'nickname' && renderNicknameScreen()}
         {phase === 'start' && renderStartScreen()}
+        {phase === 'generating' && renderGeneratingScreen()}
         {phase === 'answering' && renderAnsweringScreen()}
         {phase === 'scoring' && renderScoringScreen()}
         {phase === 'result' && renderResultScreen()}
@@ -604,6 +620,15 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     marginBottom: spacing.xl,
+  },
+  generatingLogo: {
+    width: 80,
+    height: 80,
+    marginBottom: spacing.lg,
+    opacity: 0.8,
+  },
+  generatingSpinner: {
+    marginBottom: spacing.lg,
   },
   title: {
     ...typography.h1,
