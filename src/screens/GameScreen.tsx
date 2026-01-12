@@ -13,7 +13,7 @@ import {
   Modal,
 } from 'react-native';
 import { colors, spacing, borderRadius, typography, shadows } from '../constants/theme';
-import { generateTopic, scoreAnswer, ScoreResult, SCORING_CRITERIA } from '../services/geminiService';
+import { generateTopic, scoreAnswer, ScoreResult, SCORING_CRITERIA, TopicResult } from '../services/geminiService';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import {
@@ -31,6 +31,7 @@ interface ChallengeTopic {
 export const GameScreen = ({ route, navigation }: any) => {
   const [phase, setPhase] = useState<GamePhase>('nickname');
   const [currentTopic, setCurrentTopic] = useState<string>('');
+  const [currentGenre, setCurrentGenre] = useState<string>('');
   const [answer, setAnswer] = useState<string>('');
   const [result, setResult] = useState<ScoreResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -163,6 +164,7 @@ export const GameScreen = ({ route, navigation }: any) => {
     try {
       // チャレンジお題がある場合はそれを使用
       let topic: string;
+      let genre: string = '';
       if (challengeTopic) {
         topic = challengeTopic.topic;
         // 使用後はクリア
@@ -170,9 +172,12 @@ export const GameScreen = ({ route, navigation }: any) => {
           route.params.challengeTopic = undefined;
         }
       } else {
-        topic = await generateTopic();
+        const result = await generateTopic();
+        topic = result.topic;
+        genre = result.genre;
       }
       setCurrentTopic(topic);
+      setCurrentGenre(genre);
       setPhase('answering');
       setAnswer('');
       setResult(null);
@@ -322,7 +327,14 @@ export const GameScreen = ({ route, navigation }: any) => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.phaseLabel}>お題</Text>
+        <View style={styles.topicHeader}>
+          <Text style={styles.phaseLabel}>お題</Text>
+          {currentGenre ? (
+            <View style={styles.genreBadge}>
+              <Text style={styles.genreBadgeText}>{currentGenre}</Text>
+            </View>
+          ) : null}
+        </View>
         <View style={styles.topicCardSmall}>
           <Text style={styles.topicTextSmall}>{currentTopic}</Text>
         </View>
@@ -368,7 +380,14 @@ export const GameScreen = ({ route, navigation }: any) => {
 
   const renderResultScreen = () => (
     <ScrollView contentContainerStyle={styles.scrollContent}>
-      <Text style={styles.phaseLabel}>お題</Text>
+      <View style={styles.topicHeader}>
+        <Text style={styles.phaseLabel}>お題</Text>
+        {currentGenre ? (
+          <View style={styles.genreBadge}>
+            <Text style={styles.genreBadgeText}>{currentGenre}</Text>
+          </View>
+        ) : null}
+      </View>
       <View style={styles.topicCardSmall}>
         <Text style={styles.topicTextSmall}>{currentTopic}</Text>
       </View>
@@ -631,13 +650,29 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontWeight: '600',
   },
+  topicHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+    gap: spacing.sm,
+  },
   phaseLabel: {
     ...typography.caption,
     color: colors.primary,
     fontWeight: 'bold',
-    marginBottom: spacing.sm,
     textTransform: 'uppercase',
     letterSpacing: 1,
+  },
+  genreBadge: {
+    backgroundColor: colors.secondary,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.round,
+  },
+  genreBadgeText: {
+    ...typography.caption,
+    color: colors.textInverse,
+    fontWeight: 'bold',
   },
   topicCardSmall: {
     backgroundColor: colors.primarySoft,

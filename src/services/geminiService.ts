@@ -39,8 +39,14 @@ const topicCategories = [
   { theme: '学校', examples: ['こんな先生は嫌だ。どんな先生？', '絶対に入りたくない部活とは？'] },
 ];
 
+// お題とジャンルを含む結果
+export interface TopicResult {
+  topic: string;
+  genre: string;
+}
+
 // お題を生成する（リトライ機能付き）
-const generateTopicOnce = async (): Promise<string> => {
+const generateTopicOnce = async (): Promise<TopicResult> => {
   // ランダムにジャンルを選択
   const category = topicCategories[Math.floor(Math.random() * topicCategories.length)];
   const randomSeed = Math.floor(Math.random() * 1000);
@@ -105,44 +111,46 @@ const generateTopicOnce = async (): Promise<string> => {
     throw new Error('お題が不完全です');
   }
 
-  return topic;
+  return { topic, genre: category.theme };
 };
 
-export const generateTopic = async (): Promise<string> => {
+// フォールバック用のお題（ジャンル付き）
+const fallbackTopics: TopicResult[] = [
+  { topic: 'こんなラーメン屋は絶対に流行らない。どんなラーメン屋？', genre: '食べ物' },
+  { topic: '絶対に使いたくないスマホアプリの名前とは？', genre: 'テクノロジー' },
+  { topic: '未来の運動会にありそうな競技とは？', genre: '未来・SF' },
+  { topic: 'こんな先生は嫌だ。どんな先生？', genre: '学校' },
+  { topic: '絶対に売れない新商品の名前とは？', genre: '商品・サービス' },
+  { topic: 'こんな美容室は嫌だ。どんな美容室？', genre: '職業' },
+  { topic: '絶対に乗りたくないタクシーとは？', genre: '日常生活' },
+  { topic: '100年後のコンビニにありそうなものとは？', genre: '未来・SF' },
+  { topic: 'こんな動物園は嫌だ。どんな動物園？', genre: '動物' },
+  { topic: '最悪なデートスポットとは？', genre: 'イベント' },
+  { topic: '誰も見たくないYouTube動画のタイトルとは？', genre: 'テクノロジー' },
+  { topic: 'こんな居酒屋は嫌だ。どんな居酒屋？', genre: '食べ物' },
+  { topic: '絶対に買いたくない家電とは？', genre: '商品・サービス' },
+  { topic: 'こんな遊園地は嫌だ。どんな遊園地？', genre: 'イベント' },
+  { topic: '最悪な誕生日プレゼントとは？', genre: 'イベント' },
+  { topic: 'こんなホテルは嫌だ。どんなホテル？', genre: '日常生活' },
+  { topic: '絶対に見たくない映画のタイトルとは？', genre: '日常生活' },
+  { topic: 'こんな病院は嫌だ。どんな病院？', genre: '職業' },
+  { topic: '最悪なプロポーズの言葉とは？', genre: 'イベント' },
+  { topic: '絶対に住みたくない街の名前とは？', genre: '日常生活' },
+];
+
+export const generateTopic = async (): Promise<TopicResult> => {
   const maxRetries = 3;
 
   for (let i = 0; i < maxRetries; i++) {
     try {
       console.log(`Generating topic (attempt ${i + 1}/${maxRetries})...`);
-      const topic = await generateTopicOnce();
-      console.log('Generated topic:', topic);
-      return topic;
+      const result = await generateTopicOnce();
+      console.log('Generated topic:', result);
+      return result;
     } catch (error) {
       console.log(`Attempt ${i + 1} failed:`, error);
       if (i === maxRetries - 1) {
         // 最後の試行も失敗したらフォールバック
-        const fallbackTopics = [
-          'こんなラーメン屋は絶対に流行らない。どんなラーメン屋？',
-          '絶対に使いたくないスマホアプリの名前とは？',
-          '未来の運動会にありそうな競技とは？',
-          'こんな先生は嫌だ。どんな先生？',
-          '絶対に売れない新商品の名前とは？',
-          'こんな美容室は嫌だ。どんな美容室？',
-          '絶対に乗りたくないタクシーとは？',
-          '100年後のコンビニにありそうなものとは？',
-          'こんな動物園は嫌だ。どんな動物園？',
-          '最悪なデートスポットとは？',
-          '誰も見たくないYouTube動画のタイトルとは？',
-          'こんな居酒屋は嫌だ。どんな居酒屋？',
-          '絶対に買いたくない家電とは？',
-          'こんな遊園地は嫌だ。どんな遊園地？',
-          '最悪な誕生日プレゼントとは？',
-          'こんなホテルは嫌だ。どんなホテル？',
-          '絶対に見たくない映画のタイトルとは？',
-          'こんな病院は嫌だ。どんな病院？',
-          '最悪なプロポーズの言葉とは？',
-          '絶対に住みたくない街の名前とは？',
-        ];
         const fallback = fallbackTopics[Math.floor(Math.random() * fallbackTopics.length)];
         console.log('Using fallback topic:', fallback);
         return fallback;
