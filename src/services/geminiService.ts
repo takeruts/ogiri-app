@@ -9,7 +9,7 @@ const getApiKey = (): string => {
   return key;
 };
 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 interface GeminiResponse {
   candidates: {
@@ -138,10 +138,10 @@ const generateTopicOnce = async (): Promise<TopicResult> => {
     .split('\n')[0]
     .trim();
 
-  // 「？」で終わっているか確認
+  // 「？」で終わっているか確認、なければ追加
   if (!topic.endsWith('？') && !topic.endsWith('?')) {
-    console.log('Topic incomplete (no ?), rejecting:', topic);
-    throw new Error('お題が不完全です');
+    console.log('Topic missing ?, adding:', topic);
+    topic = topic + '？';
   }
 
   return { topic, genre: category.theme };
