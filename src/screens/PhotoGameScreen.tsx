@@ -334,10 +334,6 @@ https://www.ogirihub.com/`;
         </>
       )}
 
-      <TouchableOpacity style={styles.shareButton} onPress={handleShareToX}>
-        <Text style={styles.shareButtonText}>𝕏 で結果をシェア</Text>
-      </TouchableOpacity>
-
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.secondaryButton} onPress={handleRetry}>
           <Text style={styles.secondaryButtonText}>同じ写真で再挑戦</Text>
@@ -346,6 +342,10 @@ https://www.ogirihub.com/`;
           <Text style={styles.primaryButtonText}>次の写真へ</Text>
         </TouchableOpacity>
       </View>
+
+      <TouchableOpacity style={styles.shareButton} onPress={handleShareToX}>
+        <Text style={styles.shareButtonText}>𝕏 でシェア</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.homeButton} onPress={handleGoHome}>
         <Text style={styles.homeButtonText}>最初に戻る</Text>
@@ -670,20 +670,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.textLight,
   },
   shareButton: {
-    backgroundColor: '#000000',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
-    borderRadius: borderRadius.round,
+    marginTop: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.lg,
-    ...shadows.md,
+    alignSelf: 'center',
   },
   shareButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    lineHeight: 22,
+    fontSize: 13,
+    color: colors.textLight,
+    textDecorationLine: 'underline',
   },
   skipButton: {
     marginTop: spacing.md,
