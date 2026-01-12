@@ -65,7 +65,7 @@ export const HistoryScreen = ({ navigation }: any) => {
       const { data, error } = await supabase
         .from('top_scores')
         .select('*')
-        .limit(30);
+        .limit(100);
 
       if (error) throw error;
       setTopScores(data || []);
@@ -79,7 +79,7 @@ export const HistoryScreen = ({ navigation }: any) => {
       const { data, error } = await supabase
         .from('popular_topics')
         .select('*')
-        .limit(30);
+        .limit(100);
 
       if (error) throw error;
       setPopularTopics(data || []);
@@ -168,7 +168,7 @@ export const HistoryScreen = ({ navigation }: any) => {
     });
   };
 
-  // トップ30ランキング表示
+  // トップ100ランキング表示
   const renderTopScoreItem = ({ item, index }: { item: TopScoreItem; index: number }) => (
     <View style={styles.rankingCard}>
       <View style={styles.rankBadge}>
@@ -283,7 +283,7 @@ export const HistoryScreen = ({ navigation }: any) => {
       keyExtractor={(item) => item.id}
       ListHeaderComponent={
         <View style={styles.tabHeader}>
-          <Text style={styles.tabTitle}>高得点ランキング TOP30</Text>
+          <Text style={styles.tabTitle}>高得点ランキング TOP100</Text>
           <Text style={styles.tabSubtitle}>同点の場合は回答時間が短い順</Text>
         </View>
       }
@@ -309,7 +309,7 @@ export const HistoryScreen = ({ navigation }: any) => {
       keyExtractor={(item) => item.topic}
       ListHeaderComponent={
         <View style={styles.tabHeader}>
-          <Text style={styles.tabTitle}>人気のお題 TOP30</Text>
+          <Text style={styles.tabTitle}>人気のお題 TOP100</Text>
           <Text style={styles.tabSubtitle}>挑戦者数が多い順</Text>
         </View>
       }
@@ -421,7 +421,7 @@ export const HistoryScreen = ({ navigation }: any) => {
           onPress={() => setActiveTab('ranking')}
         >
           <Text style={[styles.tabText, activeTab === 'ranking' && styles.tabTextActive]}>
-            TOP30
+            TOP100
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
