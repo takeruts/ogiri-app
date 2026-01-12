@@ -148,8 +148,8 @@ const generateTopicOnce = async (): Promise<TopicResult> => {
     topic = topic + '？';
   }
 
-  // バリデーション: 不完全なお題をチェック
-  const isValidTopic = (t: string): boolean => {
+  // 基本バリデーション: 不完全なお題をチェック
+  const isBasicValidTopic = (t: string): boolean => {
     // 最低15文字以上（短すぎる＝途中で切れている可能性）
     if (t.length < 15) {
       console.log('Topic too short:', t.length, 'chars');
@@ -166,7 +166,7 @@ const generateTopicOnce = async (): Promise<TopicResult> => {
       return false;
     }
     // 明らかに不完全な文（「、」や「を」「が」「に」「は」で終わる）
-    const incompleteEndings = ['、？', 'を？', 'が？', 'に？', 'は？', 'で？', 'と？', 'の？'];
+    const incompleteEndings = ['、？', 'を？', 'が？', 'に？', 'は？', 'で？', 'と？', 'の？', 'な？'];
     for (const ending of incompleteEndings) {
       if (t.endsWith(ending)) {
         console.log('Topic has incomplete ending:', t);
@@ -176,11 +176,79 @@ const generateTopicOnce = async (): Promise<TopicResult> => {
     return true;
   };
 
-  if (!isValidTopic(topic)) {
+  if (!isBasicValidTopic(topic)) {
     throw new Error('不完全なお題が生成されました');
   }
 
+  // AIによる品質チェック（2回目のAPI呼び出し）
+  const qualityCheckResult = await checkTopicQuality(topic, apiKey);
+  if (!qualityCheckResult.isValid) {
+    console.log('Topic failed quality check:', qualityCheckResult.reason);
+    throw new Error(`お題の品質チェックに失敗: ${qualityCheckResult.reason}`);
+  }
+
   return { topic, genre: category.theme };
+};
+
+// お題の品質をAIでチェックする関数
+const checkTopicQuality = async (topic: string, apiKey: string): Promise<{ isValid: boolean; reason?: string }> => {
+  const checkPrompt = `以下のお題が大喜利のお題として適切かどうか判定してください。
+
+【お題】
+${topic}
+
+【判定基準】
+1. 日本語として文法的に正しく、意味が通じる完全な文である
+2. 途中で切れていない（文末が「？」で自然に終わっている）
+3. 大喜利のお題として回答しやすい形式になっている
+4. 「〜とは？」「どんな〜？」など、回答を求める疑問文である
+
+【回答形式】
+OK または NG のみを出力してください。NGの場合は理由も1行で書いてください。
+例: OK
+例: NG:文が途中で切れている`;
+
+  try {
+    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [{ text: checkPrompt }],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 50,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      console.log('Quality check API failed, assuming valid');
+      return { isValid: true }; // APIエラーの場合は通す
+    }
+
+    const data: GeminiResponse = await response.json();
+    const result = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+    console.log('Quality check result:', result);
+
+    if (result.startsWith('OK')) {
+      return { isValid: true };
+    } else if (result.startsWith('NG')) {
+      const reason = result.replace(/^NG[：:]?\s*/, '') || '品質基準を満たしていません';
+      return { isValid: false, reason };
+    }
+
+    // 判定できない場合は通す
+    return { isValid: true };
+  } catch (error) {
+    console.log('Quality check error, assuming valid:', error);
+    return { isValid: true }; // エラーの場合は通す
+  }
 };
 
 // フォールバック用のお題（ジャンル付き）
