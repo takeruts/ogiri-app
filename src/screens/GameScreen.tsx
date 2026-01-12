@@ -441,6 +441,10 @@ https://www.ogirihub.com/
           )}
         </TouchableOpacity>
 
+        <TouchableOpacity style={styles.skipButton} onPress={handleNextTopic}>
+          <Text style={styles.skipButtonText}>スキップして次のお題へ</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.homeButton} onPress={handleGoHome}>
           <Text style={styles.homeButtonText}>最初に戻る</Text>
         </TouchableOpacity>
@@ -613,12 +617,14 @@ https://www.ogirihub.com/
         >
           <Text style={styles.criteriaButtonText}>採点基準</Text>
         </TouchableOpacity>
-        <Image
-          source={require('../../assets/logo.png')}
-          style={styles.headerLogo}
-          resizeMode="contain"
-        />
-        <Text style={styles.headerTitle}>壁打ちオオギリ</Text>
+        <View style={styles.headerCenter}>
+          <Image
+            source={require('../../assets/logo.png')}
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
+          <Text style={styles.headerTitle}>壁打ちオオギリ</Text>
+        </View>
         {nickname && phase !== 'nickname' ? (
           <Text style={styles.headerNickname}>{nickname}</Text>
         ) : (
@@ -659,29 +665,35 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.surface,
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     borderBottomWidth: 2,
     borderBottomColor: colors.border,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.md,
+    justifyContent: 'space-between',
     ...shadows.sm,
   },
+  headerCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    flex: 1,
+    justifyContent: 'center',
+  },
   headerLogo: {
-    width: 36,
-    height: 36,
+    width: 32,
+    height: 32,
   },
   headerTitle: {
-    ...typography.h2,
+    ...typography.h3,
     color: colors.primary,
     fontWeight: 'bold',
   },
   headerNickname: {
-    ...typography.bodySmall,
+    ...typography.caption,
     color: colors.textSecondary,
-    marginLeft: 'auto',
+    maxWidth: 70,
   },
   content: {
     flex: 1,
@@ -977,6 +989,21 @@ const styles = StyleSheet.create({
     color: colors.textLight,
     textDecorationLine: 'underline',
   },
+  skipButton: {
+    marginTop: spacing.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    alignItems: 'center',
+    backgroundColor: colors.surfaceHover,
+    borderRadius: borderRadius.round,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  skipButtonText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: '600',
+  },
   loginPrompt: {
     backgroundColor: colors.primarySoft,
     paddingVertical: spacing.md,
@@ -993,14 +1020,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   criteriaButton: {
-    position: 'absolute',
-    left: spacing.md,
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.sm,
     backgroundColor: colors.surfaceHover,
     borderRadius: borderRadius.sm,
     borderWidth: 1,
     borderColor: colors.border,
+    minWidth: 60,
   },
   criteriaButtonText: {
     ...typography.caption,
@@ -1008,7 +1034,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   headerNicknamePlaceholder: {
-    width: 60,
+    minWidth: 60,
   },
   modalOverlay: {
     flex: 1,
