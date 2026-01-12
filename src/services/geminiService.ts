@@ -9,7 +9,7 @@ const getApiKey = (): string => {
   return key;
 };
 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent';
 
 interface GeminiResponse {
   candidates: {
@@ -114,6 +114,7 @@ const generateTopicOnce = async (): Promise<TopicResult> => {
   });
 
   const data: GeminiResponse = await response.json();
+  console.log('Topic generation response status:', response.status);
 
   if (!response.ok) {
     console.error('Gemini API error response:', data);
@@ -121,8 +122,10 @@ const generateTopicOnce = async (): Promise<TopicResult> => {
   }
 
   let topic = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+  console.log('Raw topic from API:', topic);
 
   if (!topic) {
+    console.error('Empty topic received, full response:', JSON.stringify(data));
     throw new Error('お題の生成に失敗しました');
   }
 
