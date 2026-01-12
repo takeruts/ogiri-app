@@ -16,14 +16,14 @@ export const SignUpScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [username, setUsername] = useState('');
+  const [nickname, setNickname] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { signUp } = useAuth();
 
   const handleSignUp = async () => {
-    if (!email || !password || !confirmPassword || !username) {
+    if (!email || !password || !confirmPassword || !nickname) {
       Alert.alert('エラー', 'すべての項目を入力してください');
       return;
     }
@@ -40,7 +40,7 @@ export const SignUpScreen = () => {
 
     setLoading(true);
     try {
-      await signUp(email, password, username);
+      await signUp(email, password, nickname);
       Alert.alert(
         '確認メールを送信しました',
         'ご登録いただいたメールアドレスに確認メールを送信しました。メール内のリンクをクリックして登録を完了してください。',
@@ -64,9 +64,9 @@ export const SignUpScreen = () => {
 
         <TextInput
           style={styles.input}
-          placeholder="ユーザー名"
-          value={username}
-          onChangeText={setUsername}
+          placeholder="ニックネーム"
+          value={nickname}
+          onChangeText={setNickname}
           autoCapitalize="none"
         />
 
