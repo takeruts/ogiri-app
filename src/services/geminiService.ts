@@ -74,21 +74,22 @@ const generateTopicOnce = async (): Promise<TopicResult> => {
   // 例からランダムに2つ選ぶ
   const shuffledExamples = [...category.examples].sort(() => Math.random() - 0.5);
 
-  const prompt = `あなたは日本の大喜利番組の作家です。日本語だけで回答してください。
+  const prompt = `大喜利のお題を日本語で作成してください。
 
-ジャンル「${category.theme}」で、${format}のお題を1つ作ってください。
+テーマ：${category.theme}
+形式：${format}
 
-ルール：
-・日本語のみ（英語・ローマ字禁止）
-・「？」で終わる疑問文
-・20〜40文字
-・お題だけ出力
+良いお題の例：
+「${shuffledExamples[0]}」
+「${shuffledExamples[1]}」
 
-参考：
-${shuffledExamples[0]}
-${shuffledExamples[1]}
+条件：
+- 日本語の文章のみ（英語禁止）
+- 疑問文で「？」で終わること
+- 20〜40文字程度
+- 回答者が面白い答えを考えやすいお題
 
-お題：`;
+出力は日本語のお題1つだけ（説明不要）：`;
 
   const apiKey = getApiKey();
   const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
@@ -103,8 +104,8 @@ ${shuffledExamples[1]}
         },
       ],
       generationConfig: {
-        temperature: 1.0,
-        maxOutputTokens: 256,
+        temperature: 0.9,
+        maxOutputTokens: 100,
       },
     }),
   });
