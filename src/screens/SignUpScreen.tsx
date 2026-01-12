@@ -41,8 +41,11 @@ export const SignUpScreen = () => {
     setLoading(true);
     try {
       await signUp(email, password, username);
-      Alert.alert('成功', '登録が完了しました！');
-      // AuthProviderが自動的にセッションを検知してログイン状態になる
+      Alert.alert(
+        '確認メールを送信しました',
+        'ご登録いただいたメールアドレスに確認メールを送信しました。メール内のリンクをクリックして登録を完了してください。',
+        [{ text: 'OK' }]
+      );
     } catch (error: any) {
       Alert.alert('登録エラー', error.message);
     } finally {
