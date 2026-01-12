@@ -650,7 +650,7 @@ export const scoreTopic = async (topicText: string): Promise<TopicScoreResult> =
 
 ジャンル候補: 職業, 商品・サービス, 未来・SF, 日常生活, 動物, 食べ物, イベント, テクノロジー, スポーツ, 学校, 恋愛, 家族, 芸能・エンタメ, 架空の設定, 言葉遊び, 歴史・偉人, 乗り物, お金, その他
 
-{"score":数字0-100,"comment":"良い点や改善点を30字以内","suggestedGenre":"最適なジャンル1つ"}`;
+{"score":数字0-100,"comment":"この点数になった理由を50字以内で具体的に説明（良い点・改善点を含める）","suggestedGenre":"最適なジャンル1つ"}`;
 
   try {
     const apiKey = getApiKey();
