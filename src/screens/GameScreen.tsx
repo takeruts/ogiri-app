@@ -113,16 +113,53 @@ export const GameScreen = ({ route, navigation }: any) => {
         }
 
         if (displayName) {
-          // ニックネームをnicknames テーブルに登録
-          const result = await registerNickname(displayName, user.id);
-          if (result.success && result.nicknameId) {
-            setNickname(displayName);
-            setNicknameId(result.nicknameId);
-            setPhase('start');
+          // まず、同じニックネームが既にこのユーザーに紐づいているか確認
+          const { data: existingNickname } = await supabase
+            .from('nicknames')
+            .select('id, nickname, user_id')
+            .ilike('nickname', displayName)
+            .limit(1)
+            .single();
+
+          if (existingNickname) {
+            if (existingNickname.user_id === user.id) {
+              // 既に自分のニックネームとして登録されている
+              setNickname(existingNickname.nickname);
+              setNicknameId(existingNickname.id);
+              setPhase('start');
+            } else if (!existingNickname.user_id) {
+              // user_idがnullの場合（ゲストが使っていた）、このユーザーに紐付ける
+              const { error: updateError } = await supabase
+                .from('nicknames')
+                .update({ user_id: user.id, device_id: null })
+                .eq('id', existingNickname.id);
+
+              if (!updateError) {
+                setNickname(existingNickname.nickname);
+                setNicknameId(existingNickname.id);
+                setPhase('start');
+              } else {
+                // 更新に失敗した場合はプロフィール編集へ誘導
+                setNicknameError('ニックネームが他のユーザーと重複しています。マイページから変更してください。');
+                setPhase('nickname');
+              }
+            } else {
+              // 他のユーザーが使っているニックネーム
+              setNicknameError('ニックネームが他のユーザーと重複しています。マイページから変更してください。');
+              setPhase('nickname');
+            }
           } else {
-            // 登録に失敗した場合（重複など）はプロフィール編集へ誘導
-            setNicknameError('ニックネームが他のユーザーと重複しています。マイページから変更してください。');
-            setPhase('nickname');
+            // ニックネームが存在しない場合は新規登録
+            const result = await registerNickname(displayName, user.id);
+            if (result.success && result.nicknameId) {
+              setNickname(displayName);
+              setNicknameId(result.nicknameId);
+              setPhase('start');
+            } else {
+              // 登録に失敗した場合（重複など）はプロフィール編集へ誘導
+              setNicknameError('ニックネームが他のユーザーと重複しています。マイページから変更してください。');
+              setPhase('nickname');
+            }
           }
         } else {
           // どこにもニックネームがない場合
