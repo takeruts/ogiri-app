@@ -20,6 +20,7 @@ export const SignUpScreen = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(false);
   const { signUp } = useAuth();
 
   const handleSignUp = async () => {
@@ -41,17 +42,36 @@ export const SignUpScreen = () => {
     setLoading(true);
     try {
       await signUp(email, password, nickname);
-      Alert.alert(
-        '確認メールを送信しました',
-        'ご登録いただいたメールアドレスに確認メールを送信しました。メール内のリンクをクリックして登録を完了してください。',
-        [{ text: 'OK' }]
-      );
+      setIsRegistered(true);
     } catch (error: any) {
       Alert.alert('登録エラー', error.message);
     } finally {
       setLoading(false);
     }
   };
+
+  // 登録完了後のメール確認画面
+  if (isRegistered) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.content}>
+          <Text style={styles.title}>壁打ちオオギリ</Text>
+          <View style={styles.successCard}>
+            <Text style={styles.successIcon}>✉️</Text>
+            <Text style={styles.successTitle}>確認メールを送信しました</Text>
+            <Text style={styles.successMessage}>
+              {email} に確認メールを送信しました。{'\n\n'}
+              メール内のリンクをクリックして{'\n'}
+              登録を完了してください。
+            </Text>
+            <Text style={styles.successNote}>
+              ※ メールが届かない場合は、迷惑メールフォルダをご確認ください。
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -194,5 +214,36 @@ const styles = StyleSheet.create({
   buttonText: {
     ...typography.button,
     color: colors.textInverse,
+  },
+  successCard: {
+    backgroundColor: colors.surface,
+    padding: spacing.xxl,
+    borderRadius: borderRadius.lg,
+    alignItems: 'center',
+    ...shadows.md,
+    borderWidth: 2,
+    borderColor: colors.primary,
+  },
+  successIcon: {
+    fontSize: 48,
+    marginBottom: spacing.lg,
+  },
+  successTitle: {
+    ...typography.h2,
+    color: colors.primary,
+    textAlign: 'center',
+    marginBottom: spacing.lg,
+  },
+  successMessage: {
+    ...typography.body,
+    color: colors.text,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: spacing.lg,
+  },
+  successNote: {
+    ...typography.bodySmall,
+    color: colors.textLight,
+    textAlign: 'center',
   },
 });
