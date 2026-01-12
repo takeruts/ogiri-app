@@ -148,19 +148,10 @@ export const PhotoGameScreen = ({ navigation }: any) => {
     if (!result || !currentPhoto) return;
 
     const emoji = getScoreEmoji(result.score);
-    const text = `【壁打ちオオギリ - 写真で一言】${emoji} ${result.score}点！
+    const text = `${emoji}${result.score}点！「${answer}」
 
-回答：${answer}
-
-💬 ${result.comment}
-
-💡 ${result.hint}
-
-AIと大喜利の練習ができる「壁打ちオオギリ」
-あなたも挑戦してみよう！👇
-https://www.ogirihub.com/
-
-#壁打ちオオギリ #写真で一言 #大喜利 #AI採点`;
+#壁打ちオオギリ #写真で一言
+https://www.ogirihub.com/`;
 
     const encodedText = encodeURIComponent(text);
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodedText}`;

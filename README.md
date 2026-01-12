@@ -15,17 +15,28 @@ AIと大喜利の練習ができるウェブアプリ
 
 ## 主な機能
 
-- **AIお題生成**: Gemini AIが多様なジャンルからお題を自動生成（ジャンル表示付き）
-- **AI採点**: 明確な採点基準に基づき0-100点で採点し、コメントとヒントを提供
-- **採点基準表示**: いつでも採点基準を確認できるモーダル機能
+### ゲームモード
+- **壁打ちモード**: Gemini AIが多様なジャンルからお題を自動生成
+- **写真で一言モード**: Unsplash APIからランダムな写真を取得し、一言回答をAI採点
+
+### AI採点
+- **100点満点の採点**: 明確な採点基準に基づきスコアを算出
+- **コメント＆ヒント**: 回答の良い点と改善ポイントをフィードバック
+- **採点基準表示**: いつでも採点基準を確認可能
+
+### ユーザー機能
 - **ゲストプレイ**: ログイン不要で即プレイ可能
-- **ユーザー登録**: メールまたはGoogleアカウントでログイン可能
+- **ユーザー登録**: メールまたはGoogleアカウントでログイン
 - **パスワードリセット**: メールでパスワードリセット可能
 - **プロフィール編集**: ニックネームの変更が可能
+- **ログインエラー表示**: 失敗理由を日本語で表示
+
+### ランキング・共有
 - **TOP30ランキング**: 高得点の回答をお題・ニックネーム・回答時間付きで表示
 - **人気お題ランキング**: 挑戦者数の多いお題TOP30を表示
 - **お題に再挑戦**: ランキングから同じお題に挑戦可能
 - **回答時間計測**: 同点の場合は回答時間が短い方が上位
+- **X（Twitter）シェア**: 採点結果をワンタップでシェア
 
 ## 採点基準
 
@@ -48,7 +59,8 @@ AIは以下の観点で0〜100点で採点します:
 
 - **フロントエンド**: React Native with Expo (Web)
 - **言語**: TypeScript
-- **AI**: Google Gemini API
+- **AI**: Google Gemini API（テキスト＆画像認識）
+- **写真**: Unsplash API
 - **バックエンド**: Supabase (PostgreSQL)
 - **認証**: Supabase Auth（メール認証、Google OAuth）
 - **ナビゲーション**: React Navigation
@@ -61,6 +73,7 @@ AIは以下の観点で0〜100点で採点します:
 - npm
 - Supabaseアカウント
 - Google Gemini APIキー
+- Unsplash APIキー（写真で一言モード用）
 
 ### インストール手順
 
@@ -91,6 +104,7 @@ cp .env.example .env
 EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 EXPO_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
+EXPO_PUBLIC_UNSPLASH_ACCESS_KEY=your_unsplash_access_key
 ```
 
 4. Supabaseのデータベース設定
@@ -119,16 +133,19 @@ ogiri-app/
 │   ├── lib/              # ライブラリ設定 (Supabase)
 │   ├── navigation/       # ナビゲーション設定
 │   ├── services/         # サービス層
-│   │   ├── geminiService.ts    # Gemini API連携
+│   │   ├── geminiService.ts    # Gemini API連携（テキスト＆画像採点）
+│   │   ├── unsplashService.ts  # Unsplash API連携
 │   │   └── nicknameService.ts  # ニックネーム管理
 │   ├── styles/           # 共通スタイル
 │   └── screens/          # 画面コンポーネント
 │       ├── HomeScreen.tsx       # ホーム画面
-│       ├── GameScreen.tsx       # ゲーム画面（ジャンル表示対応）
+│       ├── GameScreen.tsx       # 壁打ちモード
+│       ├── PhotoGameScreen.tsx  # 写真で一言モード
 │       ├── HistoryScreen.tsx    # ランキング・履歴画面
 │       ├── MyPageScreen.tsx     # マイページ
+│       ├── ProfileEditScreen.tsx # プロフィール編集
 │       ├── AuthScreen.tsx       # 認証画面
-│       ├── LoginScreen.tsx      # ログイン（Google対応）
+│       ├── LoginScreen.tsx      # ログイン（Google対応・エラー表示）
 │       └── SignUpScreen.tsx     # 新規登録
 ├── supabase/             # データベースマイグレーション
 ├── public/               # 静的ファイル

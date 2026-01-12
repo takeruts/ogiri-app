@@ -5,13 +5,39 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { colors, spacing, borderRadius, typography, shadows } from '../constants/theme';
+
+// Supabaseエラーメッセージを日本語に変換
+const getErrorMessage = (error: any): string => {
+  const message = error?.message || 'エラーが発生しました';
+
+  // よくあるエラーメッセージを日本語に変換
+  if (message.includes('Invalid login credentials')) {
+    return 'メールアドレスまたはパスワードが正しくありません';
+  }
+  if (message.includes('Email not confirmed')) {
+    return 'メールアドレスの確認が完了していません。確認メールをご確認ください';
+  }
+  if (message.includes('User not found')) {
+    return 'このメールアドレスは登録されていません';
+  }
+  if (message.includes('Too many requests')) {
+    return 'ログイン試行回数が多すぎます。しばらくしてからお試しください';
+  }
+  if (message.includes('Network')) {
+    return 'ネットワークエラーが発生しました。接続を確認してください';
+  }
+  if (message.includes('popup')) {
+    return 'ポップアップがブロックされました。ポップアップを許可してください';
+  }
+
+  return message;
+};
 
 export const LoginScreen = () => {
   const [email, setEmail] = useState('');
@@ -20,29 +46,32 @@ export const LoginScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isResetMode, setIsResetMode] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { signIn, signInWithGoogle } = useAuth();
 
   const handleGoogleLogin = async () => {
     setLoading(true);
+    setError(null);
     try {
       await signInWithGoogle();
-    } catch (error: any) {
-      Alert.alert('ログインエラー', error.message);
+    } catch (err: any) {
+      setError(getErrorMessage(err));
       setLoading(false);
     }
   };
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('エラー', 'メールアドレスとパスワードを入力してください');
+      setError('メールアドレスとパスワードを入力してください');
       return;
     }
 
     setLoading(true);
+    setError(null);
     try {
       await signIn(email, password);
-    } catch (error: any) {
-      Alert.alert('ログインエラー', error.message);
+    } catch (err: any) {
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -50,19 +79,20 @@ export const LoginScreen = () => {
 
   const handleResetPassword = async () => {
     if (!email.trim()) {
-      Alert.alert('エラー', 'メールアドレスを入力してください');
+      setError('メールアドレスを入力してください');
       return;
     }
 
     setLoading(true);
+    setError(null);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: 'https://www.ogirihub.com/',
       });
-      if (error) throw error;
+      if (resetError) throw resetError;
       setResetSent(true);
-    } catch (error: any) {
-      Alert.alert('エラー', error.message);
+    } catch (err: any) {
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -116,6 +146,12 @@ export const LoginScreen = () => {
             パスワードリセット用のリンクを送信します。
           </Text>
 
+          {error && (
+            <View style={styles.errorBanner}>
+              <Text style={styles.errorText}>⚠️ {error}</Text>
+            </View>
+          )}
+
           <TextInput
             style={styles.input}
             placeholder="メールアドレス"
@@ -154,6 +190,12 @@ export const LoginScreen = () => {
       <View style={styles.content}>
         <Text style={styles.title}>壁打ちオオギリ</Text>
         <Text style={styles.subtitle}>ログイン</Text>
+
+        {error && (
+          <View style={styles.errorBanner}>
+            <Text style={styles.errorText}>⚠️ {error}</Text>
+          </View>
+        )}
 
         <TextInput
           style={styles.input}
@@ -378,5 +420,18 @@ const styles = StyleSheet.create({
   googleButtonText: {
     ...typography.button,
     color: colors.text,
+  },
+  errorBanner: {
+    backgroundColor: '#FEE2E2',
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: '#EF4444',
+  },
+  errorText: {
+    ...typography.body,
+    color: '#DC2626',
+    textAlign: 'center',
   },
 });

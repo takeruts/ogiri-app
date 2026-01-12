@@ -293,20 +293,10 @@ export const GameScreen = ({ route, navigation }: any) => {
     if (!result) return;
 
     const emoji = getScoreEmoji(result.score);
-    const text = `【壁打ちオオギリ】${emoji} ${result.score}点！
+    const text = `${emoji}${result.score}点！「${answer}」
 
-お題：${currentTopic}
-回答：${answer}
-
-💬 ${result.comment}
-
-💡 ${result.hint}
-
-AIと大喜利の練習ができる「壁打ちオオギリ」
-あなたも挑戦してみよう！👇
-https://www.ogirihub.com/
-
-#壁打ちオオギリ #大喜利 #AI採点`;
+#壁打ちオオギリ #大喜利
+https://www.ogirihub.com/`;
 
     const encodedText = encodeURIComponent(text);
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodedText}`;
