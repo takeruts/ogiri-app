@@ -459,7 +459,7 @@ https://www.ogirihub.com/`;
           <ActivityIndicator color={colors.textInverse} />
         ) : (
           <Text style={styles.primaryButtonText}>
-            {challengeTopic ? 'このお題に挑戦' : 'テキスト大喜利'}
+            {challengeTopic ? 'このお題に挑戦' : '大喜利'}
           </Text>
         )}
       </TouchableOpacity>
