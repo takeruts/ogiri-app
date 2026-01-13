@@ -51,19 +51,28 @@ export const GameScreen = ({ route, navigation }: any) => {
   const [topicScoreResult, setTopicScoreResult] = useState<TopicScoreResult | null>(null);
   const [topicScoring, setTopicScoring] = useState(false);
   const startTimeRef = useRef<number | null>(null);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   // ルートパラメータからお題を取得（ランキングや人気お題から挑戦する場合）
   const challengeTopic: ChallengeTopic | undefined = route?.params?.challengeTopic;
 
   // 初回ロード時にニックネームを確認
   useEffect(() => {
+    // 認証状態の読み込みが完了するまで待つ
+    if (authLoading) {
+      console.log('Auth still loading, waiting...');
+      return;
+    }
+    console.log('Auth loaded, checking nickname. user:', user?.id);
     checkExistingNickname();
-  }, [user]);
+  }, [user, authLoading]);
 
   const checkExistingNickname = async () => {
     setLoading(true);
     try {
+      console.log('checkExistingNickname called, user:', user?.id, 'email:', user?.email);
+      console.log('user_metadata:', JSON.stringify(user?.user_metadata, null, 2));
+
       // ログインユーザーの場合
       if (user) {
         // まずnicknamesテーブルを確認
@@ -106,20 +115,26 @@ export const GameScreen = ({ route, navigation }: any) => {
         // 3. auth.usersのメタデータから取得（メール登録時のnickname）
         if (!displayName && user.user_metadata?.nickname) {
           displayName = user.user_metadata.nickname;
+          console.log('displayName from nickname:', displayName);
         }
 
         // 4. Googleログイン時の名前を取得
         if (!displayName && user.user_metadata?.full_name) {
           displayName = user.user_metadata.full_name;
+          console.log('displayName from full_name:', displayName);
         }
         if (!displayName && user.user_metadata?.name) {
           displayName = user.user_metadata.name;
+          console.log('displayName from name:', displayName);
         }
 
         // 5. メールアドレスからユーザー名を生成（最終手段）
         if (!displayName && user.email) {
           displayName = user.email.split('@')[0];
+          console.log('displayName from email:', displayName);
         }
+
+        console.log('Final displayName:', displayName);
 
         if (displayName) {
           // まず、同じニックネームが既にこのユーザーに紐づいているか確認
@@ -444,7 +459,7 @@ https://www.ogirihub.com/`;
           <ActivityIndicator color={colors.textInverse} />
         ) : (
           <Text style={styles.primaryButtonText}>
-            {challengeTopic ? 'このお題に挑戦' : 'お題を出す'}
+            {challengeTopic ? 'このお題に挑戦' : 'テキスト大喜利'}
           </Text>
         )}
       </TouchableOpacity>
@@ -453,7 +468,7 @@ https://www.ogirihub.com/`;
         style={styles.photoModeButton}
         onPress={() => navigation.navigate('PhotoGame')}
       >
-        <Text style={styles.photoModeButtonText}>📷 写真で一言モード</Text>
+        <Text style={styles.photoModeButtonText}>📷 写真で一言</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
