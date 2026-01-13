@@ -20,15 +20,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // URLハッシュからOAuthトークンを処理
+    const handleOAuthCallback = async () => {
+      const hashParams = window.location.hash;
+      console.log('AuthContext: URL hash:', hashParams ? 'has hash' : 'no hash');
+
+      if (hashParams && hashParams.includes('access_token')) {
+        console.log('AuthContext: OAuth callback detected, processing...');
+        // Supabaseが自動的にハッシュからセッションを取得
+      }
+
+      const { data: { session }, error } = await supabase.auth.getSession();
+      console.log('AuthContext: getSession result:', session?.user?.id, error?.message);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-    });
+    };
+
+    handleOAuthCallback();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('AuthContext: onAuthStateChange event:', event, 'user:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
