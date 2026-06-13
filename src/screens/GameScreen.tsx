@@ -372,7 +372,7 @@ export const GameScreen = ({ route, navigation }: any) => {
 お題：${currentTopic}
 回答：${answer}
 
-#壁打ちオオギリ #大喜利
+#大喜利AI検定 #大喜利
 https://www.ogirihub.com/`;
 
     const encodedText = encodeURIComponent(text);
@@ -404,7 +404,7 @@ https://www.ogirihub.com/`;
         style={styles.logo}
         resizeMode="contain"
       />
-      <Text style={styles.title}>壁打ちオオギリ</Text>
+      <Text style={styles.title}>大喜利AI検定</Text>
       <Text style={styles.subtitle}>ニックネームを設定してください</Text>
       <Text style={styles.description}>
         {nicknameError || 'マイページからニックネームを設定すると\nゲームを開始できます'}
@@ -425,11 +425,11 @@ https://www.ogirihub.com/`;
         style={styles.logo}
         resizeMode="contain"
       />
-      <Text style={styles.title}>壁打ちオオギリ</Text>
+      <Text style={styles.title}>大喜利AI検定</Text>
       <Text style={styles.welcomeText}>ようこそ、{nickname}さん！</Text>
       <Text style={styles.description}>
         お題を出す → 回答する → AIが採点{'\n'}
-        大喜利の腕を磨こう！
+        AIがあなたの大喜利を採点・判定！
       </Text>
 
       {!user ? (
@@ -812,7 +812,7 @@ https://www.ogirihub.com/`;
             style={styles.headerLogo}
             resizeMode="contain"
           />
-          <Text style={styles.headerTitle}>壁打ちオオギリ</Text>
+          <Text style={styles.headerTitle}>大喜利AI検定</Text>
         </View>
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -837,7 +837,7 @@ https://www.ogirihub.com/`;
             style={styles.headerLogo}
             resizeMode="contain"
           />
-          <Text style={styles.headerTitle}>壁打ちオオギリ</Text>
+          <Text style={styles.headerTitle}>大喜利AI検定</Text>
         </View>
         {nickname && phase !== 'nickname' ? (
           <Text style={styles.headerNickname}>{nickname}</Text>

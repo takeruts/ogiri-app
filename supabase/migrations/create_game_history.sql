@@ -1,4 +1,4 @@
--- 壁打ちオオギリ用のゲーム履歴テーブル
+-- 大喜利AI検定用のゲーム履歴テーブル
 CREATE TABLE IF NOT EXISTS game_history (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,

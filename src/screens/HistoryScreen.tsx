@@ -385,13 +385,13 @@ export const HistoryScreen = ({ navigation }: any) => {
               />
               <Text style={styles.emptyTitle}>まだ履歴がありません</Text>
               <Text style={styles.emptyText}>
-                壁打ちオオギリに挑戦して{'\n'}履歴を残しましょう！
+                大喜利AI検定に挑戦して{'\n'}履歴を残しましょう！
               </Text>
               <TouchableOpacity
                 style={styles.homeButton}
                 onPress={() => navigation.navigate('Game')}
               >
-                <Text style={styles.homeButtonText}>壁打ちオオギリへ</Text>
+                <Text style={styles.homeButtonText}>大喜利AI検定へ</Text>
               </TouchableOpacity>
             </View>
           )

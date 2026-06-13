@@ -1,4 +1,4 @@
-# robots.txt for 壁打ちオオギリ (Kabeuchi Ogiri)
+# robots.txt for 大喜利AI検定 (Kabeuchi Ogiri)
 # https://www.ogirihub.com/
 
 User-agent: *

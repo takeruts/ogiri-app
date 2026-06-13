@@ -43,7 +43,7 @@ const MainTabs = () => {
         name="Game"
         component={GameScreen}
         options={{
-          tabBarLabel: '壁打ち',
+          tabBarLabel: '検定',
           tabBarIcon: () => <TabIcon icon="🎯" />,
         }}
       />
@@ -73,7 +73,7 @@ export const AppNavigator = () => {
   // Web用のドキュメントタイトルを設定
   useEffect(() => {
     if (Platform.OS === 'web') {
-      document.title = '壁打ちオオギリ - AIと大喜利練習';
+      document.title = '大喜利AI検定 - AIと大喜利練習';
     }
   }, []);
 

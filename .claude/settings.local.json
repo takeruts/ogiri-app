@@ -25,7 +25,16 @@
       "Bash(curl:*)",
       "Bash(ls:*)",
       "Bash(copy \"c:\\\\Users\\\\taker\\\\ogiri-app\\\\assets\\\\ogirihub_logo.png\" \"c:\\\\Users\\\\taker\\\\ogiri-app\\\\assets\\\\logo.png\")",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "WebFetch(domain:generativelanguage.googleapis.com)",
+      "WebSearch",
+      "WebFetch(domain:ai.google.dev)",
+      "Bash(echo \"tsc-done\\(exit $?\\)\")",
+      "Bash(sed -i \"s/tabBarLabel: '壁打ち'/tabBarLabel: '検定'/\" src/navigation/AppNavigator.tsx)",
+      "Bash(sed -i 's/壁打ち（ゲーム）ページ/検定（ゲーム）ページ/' public/sitemap.xml)",
+      "Read(//c/Windows/Fonts//**)",
+      "Bash(npm ping *)",
+      "Bash(node scripts/generate-icons.js)"
     ]
   }
 }

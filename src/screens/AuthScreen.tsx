@@ -26,7 +26,7 @@ export const AuthScreen = () => {
         style={styles.homeButton}
         onPress={() => navigation.navigate('Game')}
       >
-        <Text style={styles.homeButtonText}>壁打ちオオギリへ</Text>
+        <Text style={styles.homeButtonText}>大喜利AI検定へ</Text>
       </TouchableOpacity>
     </View>
   );

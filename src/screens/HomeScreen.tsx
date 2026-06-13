@@ -135,7 +135,7 @@ export const HomeScreen = ({ navigation }: any) => {
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.headerTitle}>壁打ちオオギリ</Text>
+        <Text style={styles.headerTitle}>大喜利AI検定</Text>
       </View>
       {!user ? (
         <TouchableOpacity

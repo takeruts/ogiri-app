@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "壁打ちオオギリ",
+    "name": "大喜利AI検定",
     "slug": "ogiri-app",
     "version": "1.0.0",
-    "description": "AIが出すお題に挑戦して大喜利の腕を磨けるウェブアプリ。4つの観点でAI採点、ヒントも貰える。",
+    "description": "AIが出すお題に挑戦して大喜利の実力をAIが判定するウェブアプリ。4つの観点でAI採点、ヒントも貰える。",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "assetBundlePatterns": [
@@ -28,9 +28,9 @@
     "web": {
       "bundler": "metro",
       "output": "single",
-      "name": "壁打ちオオギリ",
-      "shortName": "壁打ちオオギリ",
-      "description": "AIが出すお題に挑戦して大喜利の腕を磨けるウェブアプリ",
+      "name": "大喜利AI検定",
+      "shortName": "大喜利AI検定",
+      "description": "AIが出すお題に挑戦して大喜利の実力をAIが判定するウェブアプリ",
       "lang": "ja",
       "scope": "/",
       "themeColor": "#007AFF",

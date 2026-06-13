@@ -9,13 +9,14 @@ const getApiKey = (): string => {
   return key;
 };
 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent';
 
 interface GeminiResponse {
   candidates: {
     content: {
       parts: {
-        text: string;
+        text?: string;
+        thought?: boolean;
       }[];
     };
   }[];
@@ -24,6 +25,20 @@ interface GeminiResponse {
     code: number;
   };
 }
+
+// Gemini 3 系は thinking モデルのため、レスポンスの parts に思考部
+// （text を持たない part）が含まれることがある。全 parts から
+// 可視テキストを連結して取り出す。
+const extractText = (data: GeminiResponse): string | undefined => {
+  const parts = data.candidates?.[0]?.content?.parts;
+  if (!parts) return undefined;
+  const text = parts.map((p) => p.text || '').join('').trim();
+  return text || undefined;
+};
+
+// thinking モデルで maxOutputTokens を思考トークンが使い切らないよう、
+// 採点・お題生成のような構造化出力では思考を最小化する。
+const THINKING_CONFIG = { thinkingLevel: 'minimal' as const };
 
 // お題とジャンルを含む結果
 export interface TopicResult {
@@ -688,7 +703,8 @@ suggestedGenre: 上記ジャンルから1つ選択`;
         ],
         generationConfig: {
           temperature: 0.5,
-          maxOutputTokens: 500,
+          maxOutputTokens: 1000,
+          thinkingConfig: THINKING_CONFIG,
         },
       }),
     });
@@ -700,7 +716,7 @@ suggestedGenre: 上記ジャンルから1つ選択`;
       throw new Error(`API error: ${response.status} - ${data.error?.message || 'Unknown error'}`);
     }
 
-    const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    const resultText = extractText(data);
 
     if (!resultText) {
       console.error('Empty topic score response:', data);
@@ -840,6 +856,7 @@ export const scorePhotoAnswer = async (imageUrl: string, answer: string): Promis
         generationConfig: {
           temperature: 0.7,
           maxOutputTokens: 1000,
+          thinkingConfig: THINKING_CONFIG,
         },
       }),
     });
@@ -851,7 +868,7 @@ export const scorePhotoAnswer = async (imageUrl: string, answer: string): Promis
       throw new Error(`API error: ${response.status} - ${data.error?.message || 'Unknown error'}`);
     }
 
-    const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    const resultText = extractText(data);
 
     if (!resultText) {
       console.error('Empty score response:', data);
@@ -942,6 +959,7 @@ export const scoreAnswer = async (topic: string, answer: string): Promise<ScoreR
         generationConfig: {
           temperature: 0.7,
           maxOutputTokens: 1000,
+          thinkingConfig: THINKING_CONFIG,
         },
       }),
     });
@@ -953,7 +971,7 @@ export const scoreAnswer = async (topic: string, answer: string): Promise<ScoreR
       throw new Error(`API error: ${response.status} - ${data.error?.message || 'Unknown error'}`);
     }
 
-    const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    const resultText = extractText(data);
 
     if (!resultText) {
       console.error('Empty score response:', data);
