@@ -22,6 +22,8 @@ import { logEvent } from '../utils/analytics';
 import {
   getNicknameInfo,
   registerNickname,
+  getStoredNickname,
+  storeNickname,
 } from '../services/nicknameService';
 
 type GamePhase = 'nickname' | 'start' | 'generating' | 'answering' | 'scoring' | 'result';
@@ -46,6 +48,7 @@ export const GameScreen = ({ route, navigation }: any) => {
   const [answerTime, setAnswerTime] = useState<number | null>(null);
   const [nickname, setNickname] = useState<string>('');
   const [nicknameId, setNicknameId] = useState<string | null>(null);
+  const [guestName, setGuestName] = useState<string>(''); // 未ログイン時のランキング表示名
   const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [showCriteriaModal, setShowCriteriaModal] = useState(false);
   const [showTopicSubmitModal, setShowTopicSubmitModal] = useState(false);
@@ -195,7 +198,9 @@ export const GameScreen = ({ route, navigation }: any) => {
         }
       } else {
         // 匿名ユーザーはニックネーム不要、すぐにゲーム開始
-        setNickname('ゲスト');
+        const stored = await getStoredNickname();
+        setNickname(stored || 'ゲスト');
+        setGuestName(stored || '');
         setNicknameId(null);
         setPhase('start');
       }
@@ -214,15 +219,45 @@ export const GameScreen = ({ route, navigation }: any) => {
     }
   };
 
-  // 結果をSupabaseに保存（ログインユーザーのみ）
+  // ゲスト（未ログイン）の表示名からニックネームIDを確保する
+  const ensureGuestNickname = async (name: string): Promise<string | null> => {
+    const trimmed = (name || '').trim() || 'ゲスト';
+    await storeNickname(trimmed);
+    // このデバイスの既存ニックネームが同名ならそれを使う
+    const existing = await getNicknameInfo();
+    if (existing && existing.nickname.toLowerCase() === trimmed.toLowerCase()) {
+      return existing.nicknameId;
+    }
+    // 新規登録を試みる
+    const res = await registerNickname(trimmed);
+    if (res.success && res.nicknameId) return res.nicknameId;
+    // 既に使われている名前なら、その表示名のIDを共有して使う
+    try {
+      const { data } = await supabase
+        .from('nicknames')
+        .select('id')
+        .ilike('nickname', trimmed)
+        .limit(1)
+        .single();
+      if (data?.id) return data.id;
+    } catch (e) {
+      // フォールスルー
+    }
+    return existing?.nicknameId ?? null;
+  };
+
+  // 結果をSupabaseに保存（ログインユーザー＋名前を入力したゲスト）
   const saveResult = async (topic: string, userAnswer: string, scoreResult: ScoreResult, time: number | null) => {
-    // ログインユーザーかつnicknameIdがある場合のみ保存
-    if (!user || !nicknameId) return;
+    // ログイン済みでニックネーム未設定の場合のみスキップ
+    if (user && !nicknameId) return;
 
     try {
+      // ゲストは入力された表示名でニックネームIDを確保
+      const nid = user ? nicknameId : await ensureGuestNickname(guestName);
+
       await supabase.from('game_history').insert({
-        user_id: user.id,
-        nickname_id: nicknameId,
+        user_id: user?.id ?? null,
+        nickname_id: nid,
         topic: topic,
         answer: userAnswer,
         score: scoreResult.score,
@@ -725,6 +760,20 @@ https://www.ogirihub.com/`;
             </Text>
           )}
         </View>
+
+        {!user && (
+          <>
+            <Text style={styles.phaseLabel}>ニックネーム（ランキング表示名）</Text>
+            <TextInput
+              style={styles.guestNameInput}
+              placeholder="ゲスト"
+              placeholderTextColor={colors.textLight}
+              value={guestName}
+              onChangeText={setGuestName}
+              maxLength={20}
+            />
+          </>
+        )}
 
         <Text style={styles.phaseLabel}>あなたの回答</Text>
         <TextInput
@@ -1233,6 +1282,16 @@ const styles = StyleSheet.create({
     minHeight: 120,
     textAlignVertical: 'top',
     marginBottom: spacing.sm,
+  },
+  guestNameInput: {
+    backgroundColor: colors.surface,
+    borderWidth: 2,
+    borderColor: colors.border,
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    ...typography.body,
+    marginBottom: spacing.md,
   },
   charCount: {
     ...typography.caption,

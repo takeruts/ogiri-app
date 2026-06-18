@@ -55,8 +55,8 @@ const MainTabs = () => {
         name="History"
         component={HistoryScreen}
         options={{
-          tabBarLabel: '履歴',
-          tabBarIcon: () => <TabIcon icon="📊" />,
+          tabBarLabel: 'ランキング',
+          tabBarIcon: () => <TabIcon icon="🏆" />,
         }}
       />
       <Tab.Screen
