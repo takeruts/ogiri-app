@@ -40,7 +40,8 @@
       "Bash(sed -i \"s/tabBarLabel: '検定'/tabBarLabel: '診断'/\" src/navigation/AppNavigator.tsx)",
       "Bash(sed -i 's/検定モード/診断モード/g' README.md)",
       "Bash(node -e \"require\\('@babel/core'\\).transformFileSync\\('src/services/geminiService.ts',{presets:['babel-preset-expo']}\\);console.log\\('OK geminiService'\\)\")",
-      "Bash(node -e \"require\\('@babel/core'\\).transformFileSync\\('src/services/geminiService.ts',{presets:['babel-preset-expo']}\\);console.log\\('OK'\\)\")"
+      "Bash(node -e \"require\\('@babel/core'\\).transformFileSync\\('src/services/geminiService.ts',{presets:['babel-preset-expo']}\\);console.log\\('OK'\\)\")",
+      "Bash(node -e \"require\\('@babel/core'\\).transformFileSync\\('src/services/geminiService.ts',{presets:['babel-preset-expo']}\\);console.log\\('OK transform'\\)\")"
     ]
   }
 }
