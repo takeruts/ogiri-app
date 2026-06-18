@@ -43,7 +43,7 @@ const MainTabs = () => {
         name="Game"
         component={GameScreen}
         options={{
-          tabBarLabel: '検定',
+          tabBarLabel: '診断',
           tabBarIcon: () => <TabIcon icon="🎯" />,
         }}
       />
@@ -73,7 +73,7 @@ export const AppNavigator = () => {
   // Web用のドキュメントタイトルを設定
   useEffect(() => {
     if (Platform.OS === 'web') {
-      document.title = '大喜利AI検定 - AIと大喜利練習';
+      document.title = 'お笑い偏差値診断 - AIお笑いセンス診断';
     }
   }, []);
 

@@ -34,7 +34,11 @@
       "Bash(sed -i 's/壁打ち（ゲーム）ページ/検定（ゲーム）ページ/' public/sitemap.xml)",
       "Read(//c/Windows/Fonts//**)",
       "Bash(npm ping *)",
-      "Bash(node scripts/generate-icons.js)"
+      "Bash(node scripts/generate-icons.js)",
+      "Bash(node -e ' *)",
+      "Bash(node scripts/preview-result.js)",
+      "Bash(sed -i \"s/tabBarLabel: '検定'/tabBarLabel: '診断'/\" src/navigation/AppNavigator.tsx)",
+      "Bash(sed -i 's/検定モード/診断モード/g' README.md)"
     ]
   }
 }

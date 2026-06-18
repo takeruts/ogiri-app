@@ -775,10 +775,21 @@ export const generateTopic = async (): Promise<TopicResult> => {
 };
 
 // 回答を採点する
+// お笑いセンスの4軸（各1〜5）
+export interface DiagAxes {
+  creativity: number; // 創造力
+  sarcasm: number; // 毒舌力
+  surreal: number; // シュール力
+  empathy: number; // 共感力
+}
+
 export interface ScoreResult {
   score: number;
   comment: string;
   hint: string;
+  type?: string; // お笑いタイプ名（診断）
+  axes?: DiagAxes; // 4軸スコア（診断レーダー）
+  analysis?: string; // Spotify Wrapped 風の一言分析
 }
 
 // 採点基準（UIでも表示するためexport）
@@ -939,7 +950,8 @@ export const scoreAnswer = async (topic: string, answer: string): Promise<ScoreR
 - お題との関連性（20点）: お題の意図を理解しているか
 - 表現の巧みさ（10点）: 言葉選び、簡潔さ
 
-{"score":数字0-100,"comment":"面白い点や足りない点を30字以内","hint":"お題の狙いと高得点のコツを50字以内"}`;
+JSON形式（説明文なし）:
+{"score":数字0-100,"comment":"面白い点や足りない点を30字以内","hint":"お題の狙いと高得点のコツを50字以内","type":"回答のお笑いセンスを表すタイプ名を10字以内で命名（例:天才ひらめき型/毒舌キレ型/シュール型/共感型/ど真ん中型）","axes":{"creativity":1〜5の整数,"sarcasm":1〜5の整数,"surreal":1〜5の整数,"empathy":1〜5の整数},"analysis":"回答の個性をSpotify Wrapped風に1文・20字以内で（例:予測不能度MAX）"}`;
 
   try {
     const apiKey = getApiKey();
@@ -1016,6 +1028,17 @@ export const scoreAnswer = async (topic: string, answer: string): Promise<ScoreR
 
     // スコアを0-100の範囲に正規化
     result.score = Math.max(0, Math.min(100, Math.round(result.score)));
+
+    // 4軸スコアが返ってきた場合は1〜5の整数に正規化
+    if (result.axes) {
+      const clamp5 = (n: number) => Math.max(1, Math.min(5, Math.round(Number(n) || 3)));
+      result.axes = {
+        creativity: clamp5(result.axes.creativity),
+        sarcasm: clamp5(result.axes.sarcasm),
+        surreal: clamp5(result.axes.surreal),
+        empathy: clamp5(result.axes.empathy),
+      };
+    }
 
     return result;
   } catch (error) {

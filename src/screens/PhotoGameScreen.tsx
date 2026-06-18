@@ -152,7 +152,7 @@ export const PhotoGameScreen = ({ navigation }: any) => {
 
 写真で一言：${answer}
 
-#大喜利AI検定 #写真で一言
+#お笑い偏差値診断 #写真で一言
 https://www.ogirihub.com/`;
 
     const encodedText = encodeURIComponent(text);

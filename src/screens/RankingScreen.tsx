@@ -36,7 +36,7 @@ export const RankingScreen = ({ navigation }: any) => {
           .from('answers')
           .select('*, profiles(username), topics(title)')
           .order('likes_count', { ascending: false })
-          .limit(50);
+          .limit(100);
 
         if (error) throw error;
         setItems(data || []);
@@ -45,7 +45,7 @@ export const RankingScreen = ({ navigation }: any) => {
           .from('topics')
           .select('*, profiles(username)')
           .order('likes_count', { ascending: false })
-          .limit(50);
+          .limit(100);
 
         if (error) throw error;
         setItems(data || []);
@@ -67,37 +67,61 @@ export const RankingScreen = ({ navigation }: any) => {
     fetchRanking();
   };
 
-  const renderItem = ({ item, index }: { item: RankingItem; index: number }) => (
-    <TouchableOpacity
-      style={styles.itemCard}
-      onPress={() => {
-        if (rankingType === 'answers') {
-          navigation.navigate('AnswerDetail', { answerId: item.id });
-        } else {
-          navigation.navigate('TopicDetail', { topicId: item.id });
-        }
-      }}
-    >
-      <View style={styles.rankBadge}>
-        <Text style={styles.rankText}>{index + 1}</Text>
-      </View>
-      <View style={styles.itemContent}>
-        <Text style={styles.itemTitle} numberOfLines={2}>
-          {rankingType === 'answers' ? item.content : item.title}
-        </Text>
-        <View style={styles.itemFooter}>
-          <Text style={styles.username}>by {item.profiles.username}</Text>
-          <View style={styles.reactions}>
-            <Text style={styles.reactionText}>👍 {item.likes_count}</Text>
-            <Text style={styles.reactionText}>👎 {item.dislikes_count}</Text>
+  // ランク → 称号・色・絵文字
+  const getRankStyle = (rank: number) => {
+    if (rank === 1) return { emoji: '👑', label: '殿堂入り', color: '#FBBF24' };
+    if (rank === 2) return { emoji: '🥈', label: '天才', color: '#CBD5E1' };
+    if (rank === 3) return { emoji: '🥉', label: '天才', color: '#F59E0B' };
+    if (rank <= 10) return { emoji: '🔥', label: '天才', color: colors.accent };
+    if (rank <= 30) return { emoji: '⭐', label: '秀才', color: colors.primary };
+    return { emoji: '✨', label: '実力派', color: colors.primaryDark };
+  };
+
+  const renderItem = ({ item, index }: { item: RankingItem; index: number }) => {
+    const rank = index + 1;
+    const r = getRankStyle(rank);
+    const isTop3 = rank <= 3;
+    const badgeTextColor = isTop3 ? '#1B1030' : '#fff';
+    return (
+      <TouchableOpacity
+        style={[styles.itemCard, isTop3 && { borderColor: r.color }]}
+        onPress={() => {
+          if (rankingType === 'answers') {
+            navigation.navigate('AnswerDetail', { answerId: item.id });
+          } else {
+            navigation.navigate('TopicDetail', { topicId: item.id });
+          }
+        }}
+      >
+        <View style={[styles.rankBadge, { backgroundColor: r.color }]}>
+          <Text style={styles.rankEmoji}>{r.emoji}</Text>
+          <Text style={[styles.rankText, { color: badgeTextColor }]}>{rank}</Text>
+        </View>
+        <View style={styles.itemContent}>
+          <View style={[styles.titleChip, { borderColor: r.color }]}>
+            <Text style={[styles.titleChipText, { color: r.color }]}>{r.label}</Text>
+          </View>
+          <Text style={styles.itemTitle} numberOfLines={2}>
+            {rankingType === 'answers' ? item.content : item.title}
+          </Text>
+          <View style={styles.itemFooter}>
+            <Text style={styles.username}>by {item.profiles.username}</Text>
+            <View style={styles.reactions}>
+              <Text style={styles.reactionText}>👍 {item.likes_count}</Text>
+              <Text style={styles.reactionText}>👎 {item.dislikes_count}</Text>
+            </View>
           </View>
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
+      <View style={styles.rankHeader}>
+        <Text style={styles.rankHeaderTitle}>今週の天才 TOP100</Text>
+        <Text style={styles.rankHeaderSub}>みんなのお笑いセンスをランキング</Text>
+      </View>
       <View style={styles.tabContainer}>
         <TouchableOpacity
           style={[styles.tab, rankingType === 'answers' && styles.tabActive]}
@@ -188,23 +212,55 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderLight,
   },
+  rankHeader: {
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.md,
+    paddingHorizontal: spacing.lg,
+    alignItems: 'center',
+  },
+  rankHeaderTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: colors.text,
+    letterSpacing: 1,
+  },
+  rankHeaderSub: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
   rankBadge: {
-    width: 48,
-    height: 48,
+    width: 56,
+    height: 56,
     borderRadius: borderRadius.round,
-    backgroundColor: colors.secondary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: spacing.lg,
     ...shadows.sm,
   },
+  rankEmoji: {
+    fontSize: 18,
+    lineHeight: 20,
+  },
   rankText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.surface,
+    fontSize: 18,
+    fontWeight: '900',
+    lineHeight: 20,
   },
   itemContent: {
     flex: 1,
+  },
+  titleChip: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderRadius: borderRadius.round,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 2,
+    marginBottom: spacing.sm,
+  },
+  titleChipText: {
+    fontSize: 12,
+    fontWeight: '800',
   },
   itemTitle: {
     ...typography.body,

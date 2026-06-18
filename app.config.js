@@ -1,16 +1,16 @@
 module.exports = {
   expo: {
-    name: '大喜利AI検定',
+    name: 'お笑い偏差値診断',
     slug: 'ogiri-app',
     version: '1.0.0',
-    description: 'AIが出すお題に挑戦して大喜利の実力をAIが判定するウェブアプリ。4つの観点でAI採点、ヒントも貰える。',
+    description: 'AIがあなたのお笑いセンスを診断するウェブアプリ。4つの観点でAI採点、ヒントも貰える。',
     orientation: 'portrait',
     icon: './assets/icon.png',
-    userInterfaceStyle: 'light',
+    userInterfaceStyle: 'dark',
     splash: {
       image: './assets/splash.png',
       resizeMode: 'contain',
-      backgroundColor: '#ffffff',
+      backgroundColor: '#0E0A1F',
     },
     assetBundlePatterns: ['**/*'],
     ios: {
@@ -26,7 +26,7 @@ module.exports = {
     android: {
       adaptiveIcon: {
         foregroundImage: './assets/adaptive-icon.png',
-        backgroundColor: '#ffffff',
+        backgroundColor: '#0E0A1F',
       },
       package: 'com.ogiriapp.mobile',
       permissions: [
@@ -38,13 +38,13 @@ module.exports = {
     web: {
       bundler: 'metro',
       output: 'single',
-      name: '大喜利AI検定',
-      shortName: '大喜利AI検定',
-      description: 'AIが出すお題に挑戦して大喜利の実力をAIが判定するウェブアプリ',
+      name: 'お笑い偏差値診断',
+      shortName: 'お笑い偏差値診断',
+      description: 'AIがあなたのお笑いセンスを診断するウェブアプリ',
       lang: 'ja',
       scope: '/',
-      themeColor: '#007AFF',
-      backgroundColor: '#ffffff',
+      themeColor: '#A855F7',
+      backgroundColor: '#0E0A1F',
       display: 'standalone',
       orientation: 'portrait',
     },

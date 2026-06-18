@@ -13,10 +13,11 @@ import {
   Modal,
   Linking,
 } from 'react-native';
-import { colors, spacing, borderRadius, typography, shadows } from '../constants/theme';
+import { colors, spacing, borderRadius, typography, shadows, diag } from '../constants/theme';
 import { generateTopic, scoreAnswer, scoreTopic, saveUserTopic, TOPIC_SCORE_THRESHOLD, ScoreResult, SCORING_CRITERIA, TopicResult, TopicScoreResult } from '../services/geminiService';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { generateResultImage, shareOrDownloadImage } from '../utils/shareImage';
 import {
   getNicknameInfo,
   registerNickname,
@@ -50,6 +51,7 @@ export const GameScreen = ({ route, navigation }: any) => {
   const [userTopicInput, setUserTopicInput] = useState('');
   const [topicScoreResult, setTopicScoreResult] = useState<TopicScoreResult | null>(null);
   const [topicScoring, setTopicScoring] = useState(false);
+  const [savingImage, setSavingImage] = useState(false);
   const startTimeRef = useRef<number | null>(null);
   const { user, loading: authLoading } = useAuth();
 
@@ -366,19 +368,56 @@ export const GameScreen = ({ route, navigation }: any) => {
   const handleShareToX = () => {
     if (!result) return;
 
-    const emoji = getScoreEmoji(result.score);
-    const text = `${emoji}${result.score}点！
+    const dev = getDeviation(result.score);
+    const top = getTopPercent(result.score);
+    const axes = getAxes(result, answer);
+    const dtype = getDiagType(result, axes);
+    const text = `🎤お笑い偏差値 ${dev}（全国上位${top}%）
+タイプ：${dtype}
 
 お題：${currentTopic}
 回答：${answer}
 
-#大喜利AI検定 #大喜利
+#お笑い偏差値診断 #お笑い偏差値診断
 https://www.ogirihub.com/`;
 
     const encodedText = encodeURIComponent(text);
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodedText}`;
 
     Linking.openURL(twitterUrl);
+  };
+
+  // 診断結果を縦長カード画像にして保存／シェア
+  const handleSaveImage = async () => {
+    if (!result || savingImage) return;
+    setSavingImage(true);
+    try {
+      const axes = getAxes(result, answer);
+      const blob = await generateResultImage({
+        deviation: getDeviation(result.score),
+        topPercent: getTopPercent(result.score),
+        type: getDiagType(result, axes),
+        axes: [
+          { label: '創造力', value: axes.creativity },
+          { label: '毒舌力', value: axes.sarcasm },
+          { label: 'シュール力', value: axes.surreal },
+          { label: '共感力', value: axes.empathy },
+        ],
+        analysis: getAnalysis(result),
+        topic: currentTopic,
+        answer,
+      });
+      if (blob) {
+        await shareOrDownloadImage(blob, 'owarai-hensachi.png');
+      } else {
+        setError('画像の保存はWeb版で利用できます');
+      }
+    } catch (e) {
+      console.error('画像生成エラー:', e);
+      setError('画像の生成に失敗しました');
+    } finally {
+      setSavingImage(false);
+    }
   };
 
   const getScoreColor = (score: number) => {
@@ -396,6 +435,70 @@ https://www.ogirihub.com/`;
     return '💪';
   };
 
+  // ===== お笑いセンス診断ロジック =====
+  // 点数 → お笑い偏差値（0→40, 100→75）
+  const getDeviation = (score: number) => Math.round(40 + score * 0.35);
+
+  // 点数 → 全国上位パーセント
+  const getTopPercent = (score: number) => {
+    if (score >= 95) return 1;
+    if (score >= 90) return 3;
+    if (score >= 85) return 5;
+    if (score >= 80) return 8;
+    if (score >= 75) return 12;
+    if (score >= 70) return 18;
+    if (score >= 65) return 25;
+    if (score >= 60) return 33;
+    if (score >= 50) return 45;
+    if (score >= 40) return 60;
+    if (score >= 30) return 75;
+    return 88;
+  };
+
+  // 文字列ハッシュ（軸のばらつきを決定的に出す）
+  const hashStr = (s: string) => {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return h;
+  };
+
+  // 4軸スコア（AIが返せばそれを使い、無ければ点数＋回答から決定的に生成）
+  const getAxes = (r: ScoreResult, ans: string): { creativity: number; sarcasm: number; surreal: number; empathy: number } => {
+    if (r.axes) return r.axes;
+    const base = Math.max(1, Math.min(5, Math.round(r.score / 20)));
+    const h = hashStr(ans + r.score);
+    const vary = (shift: number) => {
+      const d = ((h >> shift) & 3) - 1; // -1〜2
+      return Math.max(1, Math.min(5, base + d));
+    };
+    return { creativity: vary(0), sarcasm: vary(2), surreal: vary(4), empathy: vary(6) };
+  };
+
+  // お笑いタイプ（AI優先 → 最も高い軸から命名）
+  const getDiagType = (r: ScoreResult, axes: { creativity: number; sarcasm: number; surreal: number; empathy: number }) => {
+    if (r.type) return r.type;
+    if (r.score < 40) return 'これから伸びる原石型';
+    const entries: [string, number][] = [
+      ['天才ひらめき型', axes.creativity],
+      ['毒舌キレ型', axes.sarcasm],
+      ['シュール天才型', axes.surreal],
+      ['共感マスター型', axes.empathy],
+    ];
+    entries.sort((a, b) => b[1] - a[1]);
+    return entries[0][0];
+  };
+
+  // Wrapped 風の一言分析
+  const getAnalysis = (r: ScoreResult) =>
+    r.analysis || (r.score >= 70 ? '予測不能度MAX' : r.score >= 45 ? '安定感のあるボケ' : '伸びしろ無限大');
+
+  // AI審査員キャラ（点数で出し分け）
+  const getJudge = (score: number) => {
+    if (score >= 70) return { name: 'ラナ', tag: '天才系AI', color: diag.purple };
+    if (score >= 45) return { name: 'モモ', tag: '共感系AI', color: diag.pink };
+    return { name: 'ミュー', tag: '毒舌系AI', color: '#F59E0B' };
+  };
+
   // ニックネーム設定画面（ログインユーザーでニックネーム未設定の場合のみ）
   const renderNicknameScreen = () => (
     <View style={styles.centerContent}>
@@ -404,7 +507,7 @@ https://www.ogirihub.com/`;
         style={styles.logo}
         resizeMode="contain"
       />
-      <Text style={styles.title}>大喜利AI検定</Text>
+      <Text style={styles.title}>お笑い偏差値診断</Text>
       <Text style={styles.subtitle}>ニックネームを設定してください</Text>
       <Text style={styles.description}>
         {nicknameError || 'マイページからニックネームを設定すると\nゲームを開始できます'}
@@ -425,11 +528,13 @@ https://www.ogirihub.com/`;
         style={styles.logo}
         resizeMode="contain"
       />
-      <Text style={styles.title}>大喜利AI検定</Text>
+      <Text style={styles.title}>お笑い偏差値診断</Text>
+      <Text style={styles.heroCopy}>あなたの笑いの才能、{'\n'}AIが本気で診断。</Text>
+      <Text style={styles.heroSub}>3分でわかる、お笑い偏差値。</Text>
       <Text style={styles.welcomeText}>ようこそ、{nickname}さん！</Text>
       <Text style={styles.description}>
-        お題を出す → 回答する → AIが採点{'\n'}
-        AIがあなたの大喜利を採点・判定！
+        お題に回答 → AIが偏差値・タイプを診断{'\n'}
+        結果はSNSでシェアできる！
       </Text>
 
       {!user ? (
@@ -459,7 +564,7 @@ https://www.ogirihub.com/`;
           <ActivityIndicator color={colors.textInverse} />
         ) : (
           <Text style={styles.primaryButtonText}>
-            {challengeTopic ? 'このお題に挑戦' : '大喜利'}
+            {challengeTopic ? 'このお題で診断' : '診断をはじめる'}
           </Text>
         )}
       </TouchableOpacity>
@@ -706,33 +811,69 @@ https://www.ogirihub.com/`;
         <Text style={styles.answerText}>{answer}</Text>
       </View>
 
-      {result && (
-        <>
-          <View style={styles.scoreContainer}>
-            <Text style={styles.scoreEmoji}>{getScoreEmoji(result.score)}</Text>
-            <Text style={[styles.scoreNumber, { color: getScoreColor(result.score) }]}>
-              {result.score}
-            </Text>
-            <Text style={styles.scoreMax}>点</Text>
-          </View>
+      {result && (() => {
+        const dev = getDeviation(result.score);
+        const top = getTopPercent(result.score);
+        const axes = getAxes(result, answer);
+        const dtype = getDiagType(result, axes);
+        const judge = getJudge(result.score);
+        const analysis = getAnalysis(result);
+        const axisList = [
+          { label: '創造力', value: axes.creativity },
+          { label: '毒舌力', value: axes.sarcasm },
+          { label: 'シュール力', value: axes.surreal },
+          { label: '共感力', value: axes.empathy },
+        ];
+        return (
+          <View style={styles.diagCard}>
+            <Text style={styles.diagLabel}>お笑い偏差値</Text>
+            <Text style={styles.diagDeviation}>{dev}</Text>
+            <View style={styles.diagTopPill}>
+              <Text style={styles.diagTopPillText}>全国上位 {top}%</Text>
+            </View>
 
-          {answerTime !== null && (
-            <Text style={styles.answerTimeText}>
-              回答時間: {answerTime < 60 ? `${answerTime}秒` : `${Math.floor(answerTime / 60)}分${answerTime % 60}秒`}
-            </Text>
-          )}
+            <Text style={styles.diagTypeLabel}>あなたは</Text>
+            <Text style={styles.diagType}>「{dtype}」</Text>
 
-          <View style={styles.commentCard}>
-            <Text style={styles.commentLabel}>コメント</Text>
-            <Text style={styles.commentText}>{result.comment}</Text>
-          </View>
+            <View style={styles.diagAxes}>
+              {axisList.map((a) => (
+                <View key={a.label} style={styles.axisRow}>
+                  <Text style={styles.axisLabel}>{a.label}</Text>
+                  <Text style={styles.axisStars}>
+                    <Text style={styles.axisStarOn}>{'★'.repeat(a.value)}</Text>
+                    <Text style={styles.axisStarOff}>{'☆'.repeat(5 - a.value)}</Text>
+                  </Text>
+                </View>
+              ))}
+            </View>
 
-          <View style={styles.hintCard}>
-            <Text style={styles.hintLabel}>💡 ヒント</Text>
-            <Text style={styles.hintText}>{result.hint}</Text>
+            <View style={styles.wrappedCard}>
+              <Text style={styles.wrappedLabel}>AI ANALYSIS</Text>
+              <Text style={styles.wrappedText}>あなたの回答は{'\n'}{analysis}</Text>
+            </View>
+
+            <View style={styles.judgeRow}>
+              <View style={[styles.judgeAvatar, { backgroundColor: judge.color }]}>
+                <Text style={styles.judgeAvatarText}>{judge.name.charAt(0)}</Text>
+              </View>
+              <View style={styles.judgeBubble}>
+                <Text style={[styles.judgeName, { color: judge.color }]}>{judge.name}・{judge.tag}</Text>
+                <Text style={styles.judgeComment}>{result.comment}</Text>
+              </View>
+            </View>
+
+            <View style={styles.diagHint}>
+              <Text style={styles.diagHintText}>💡 {result.hint}</Text>
+            </View>
+
+            {answerTime !== null && (
+              <Text style={styles.diagTime}>
+                回答時間 {answerTime < 60 ? `${answerTime}秒` : `${Math.floor(answerTime / 60)}分${answerTime % 60}秒`}
+              </Text>
+            )}
           </View>
-        </>
-      )}
+        );
+      })()}
 
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.secondaryButton} onPress={handleRetry}>
@@ -743,8 +884,16 @@ https://www.ogirihub.com/`;
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.shareButton} onPress={handleShareToX}>
-        <Text style={styles.shareButtonText}>𝕏 でシェア</Text>
+      <TouchableOpacity style={styles.neonShareButton} onPress={handleSaveImage} disabled={savingImage}>
+        {savingImage ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.neonShareButtonText}>📸 診断結果を画像で保存・シェア</Text>
+        )}
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.xShareButton} onPress={handleShareToX}>
+        <Text style={styles.xShareButtonText}>𝕏 でテキスト投稿</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.homeButton} onPress={handleGoHome}>
@@ -812,7 +961,7 @@ https://www.ogirihub.com/`;
             style={styles.headerLogo}
             resizeMode="contain"
           />
-          <Text style={styles.headerTitle}>大喜利AI検定</Text>
+          <Text style={styles.headerTitle}>お笑い偏差値診断</Text>
         </View>
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -837,7 +986,7 @@ https://www.ogirihub.com/`;
             style={styles.headerLogo}
             resizeMode="contain"
           />
-          <Text style={styles.headerTitle}>大喜利AI検定</Text>
+          <Text style={styles.headerTitle}>お笑い偏差値診断</Text>
         </View>
         {nickname && phase !== 'nickname' ? (
           <Text style={styles.headerNickname}>{nickname}</Text>
@@ -1167,7 +1316,11 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.round,
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadows.md,
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 18,
+    elevation: 10,
   },
   primaryButtonText: {
     fontSize: 18,
@@ -1518,5 +1671,220 @@ const styles = StyleSheet.create({
   closeModalButtonText: {
     ...typography.body,
     color: colors.textLight,
+  },
+
+  // ===== ヒーロー（スタート画面コピー） =====
+  heroCopy: {
+    fontSize: 26,
+    fontWeight: '900',
+    color: colors.text,
+    textAlign: 'center',
+    lineHeight: 36,
+    marginTop: spacing.md,
+  },
+  heroSub: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.accent,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+
+  // ===== お笑いセンス診断カード =====
+  diagCard: {
+    backgroundColor: diag.bgCard,
+    borderRadius: 28,
+    padding: spacing.xxl,
+    marginTop: spacing.lg,
+    marginBottom: spacing.lg,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: diag.glassBorder,
+    shadowColor: diag.purple,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 30,
+    elevation: 12,
+    overflow: 'hidden',
+  },
+  diagLabel: {
+    fontSize: 13,
+    color: diag.textSub,
+    letterSpacing: 3,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  diagDeviation: {
+    fontSize: 88,
+    fontWeight: '900',
+    color: diag.pinkLight,
+    lineHeight: 96,
+    textShadowColor: diag.pink,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 24,
+  },
+  diagTopPill: {
+    backgroundColor: 'rgba(168,85,247,0.18)',
+    borderColor: diag.purple,
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    marginTop: 6,
+  },
+  diagTopPillText: {
+    color: diag.text,
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  diagTypeLabel: {
+    color: diag.textSub,
+    fontSize: 14,
+    marginTop: spacing.xl,
+  },
+  diagType: {
+    color: diag.text,
+    fontSize: 30,
+    fontWeight: '900',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  diagAxes: {
+    width: '100%',
+    marginTop: spacing.xxl,
+    gap: 10,
+  },
+  axisRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  axisLabel: {
+    color: diag.textSub,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  axisStars: {
+    fontSize: 20,
+    letterSpacing: 2,
+  },
+  axisStarOn: {
+    color: diag.star,
+  },
+  axisStarOff: {
+    color: diag.starEmpty,
+  },
+  wrappedCard: {
+    width: '100%',
+    marginTop: spacing.xxl,
+    backgroundColor: diag.glass,
+    borderColor: diag.glassBorder,
+    borderWidth: 1,
+    borderRadius: 20,
+    padding: spacing.xl,
+    alignItems: 'center',
+  },
+  wrappedLabel: {
+    color: diag.purpleSoft,
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 3,
+    marginBottom: 8,
+  },
+  wrappedText: {
+    color: diag.text,
+    fontSize: 22,
+    fontWeight: '800',
+    textAlign: 'center',
+    lineHeight: 30,
+  },
+  judgeRow: {
+    flexDirection: 'row',
+    width: '100%',
+    marginTop: spacing.xxl,
+    gap: 12,
+    alignItems: 'flex-start',
+  },
+  judgeAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  judgeAvatarText: {
+    color: '#fff',
+    fontWeight: '900',
+    fontSize: 20,
+  },
+  judgeBubble: {
+    flex: 1,
+    backgroundColor: diag.glass,
+    borderColor: diag.glassBorder,
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: spacing.lg,
+  },
+  judgeName: {
+    fontSize: 13,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  judgeComment: {
+    color: diag.text,
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  diagHint: {
+    width: '100%',
+    marginTop: spacing.lg,
+    backgroundColor: 'rgba(251,191,36,0.10)',
+    borderRadius: 14,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(251,191,36,0.25)',
+  },
+  diagHintText: {
+    color: '#FDE68A',
+    fontSize: 14,
+    lineHeight: 21,
+  },
+  diagTime: {
+    color: diag.textSub,
+    fontSize: 12,
+    marginTop: spacing.md,
+  },
+  neonShareButton: {
+    backgroundColor: diag.pink,
+    borderRadius: 999,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: spacing.lg,
+    shadowColor: diag.pink,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.7,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  neonShareButtonText: {
+    color: '#fff',
+    fontWeight: '900',
+    fontSize: 16,
+    letterSpacing: 1,
+  },
+  xShareButton: {
+    borderRadius: 999,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: spacing.md,
+    borderWidth: 1,
+    borderColor: diag.glassBorder,
+    backgroundColor: diag.glass,
+  },
+  xShareButtonText: {
+    color: diag.text,
+    fontWeight: '700',
+    fontSize: 15,
   },
 });

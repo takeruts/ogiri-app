@@ -1,54 +1,71 @@
-// 大喜利AI検定 - モダンでポップで優しいテーマ
+// お笑い偏差値診断 - モダンでポップで優しいテーマ
 
 export const colors = {
-  // Primary colors - 明るく優しいブルー
-  primary: '#4A90E2',
-  primaryLight: '#6BA3E8',
-  primaryDark: '#3B7BC9',
-  primarySoft: '#E8F4FF',
+  // Primary - ネオンパープル
+  primary: '#A855F7',
+  primaryLight: '#C084FC',
+  primaryDark: '#7C3AED',
+  primarySoft: 'rgba(168,85,247,0.16)',
 
-  // Secondary colors - 温かみのあるオレンジ
-  secondary: '#FF9F66',
-  secondaryLight: '#FFB485',
-  secondaryDark: '#FF8547',
-  secondarySoft: '#FFF4ED',
+  // Secondary - ピンク
+  secondary: '#F472B6',
+  secondaryLight: '#F9A8D4',
+  secondaryDark: '#EC4899',
+  secondarySoft: 'rgba(236,72,153,0.16)',
 
-  // Accent colors - ポップなピンク
-  accent: '#FF6B9D',
-  accentLight: '#FF88B0',
-  accentDark: '#FF528A',
-  accentSoft: '#FFF0F5',
+  // Accent - ホットピンク
+  accent: '#EC4899',
+  accentLight: '#F472B6',
+  accentDark: '#DB2777',
+  accentSoft: 'rgba(236,72,153,0.16)',
 
-  // Success - 優しいグリーン
-  success: '#66D9B3',
-  successLight: '#85E0C4',
-  successDark: '#4DC99F',
-  successSoft: '#EDFCF7',
+  // Success - ミントグリーン
+  success: '#34D399',
+  successLight: '#6EE7B7',
+  successDark: '#10B981',
+  successSoft: 'rgba(52,211,153,0.16)',
 
-  // Warning - 柔らかいイエロー
-  warning: '#FFD166',
-  warningSoft: '#FFF8E6',
+  // Warning - アンバー
+  warning: '#FBBF24',
+  warningSoft: 'rgba(251,191,36,0.16)',
 
-  // Error - 優しいレッド
-  error: '#FF6B6B',
-  errorSoft: '#FFECEC',
+  // Error - ローズ
+  error: '#FB7185',
+  errorSoft: 'rgba(251,113,133,0.16)',
 
-  // Neutral colors - 柔らかいグレー
-  background: '#F8FAFB',
-  surface: '#FFFFFF',
-  surfaceHover: '#F5F7F9',
-  border: '#E3E8EC',
-  borderLight: '#F0F3F6',
+  // Neutral - ダーク（診断の世界観）
+  background: '#0E0A1F',
+  surface: '#181030',
+  surfaceHover: '#221640',
+  border: 'rgba(255,255,255,0.14)',
+  borderLight: 'rgba(255,255,255,0.08)',
 
   // Text colors
-  text: '#2C3E50',
-  textSecondary: '#7C8BA1',
-  textLight: '#A4B4C4',
+  text: '#F5F3FF',
+  textSecondary: '#B9AEDB',
+  textLight: '#8B7FB0',
   textInverse: '#FFFFFF',
 
   // Special
-  overlay: 'rgba(44, 62, 80, 0.5)',
-  shadow: 'rgba(74, 144, 226, 0.15)',
+  overlay: 'rgba(8,5,18,0.72)',
+  shadow: 'rgba(168,85,247,0.30)',
+};
+
+// 診断（お笑いセンス診断）用デザイントークン
+// ダーク × 紫→ピンクのネオン／ガラスモーフィズムの世界観
+export const diag = {
+  bg: '#0E0A1F',
+  bgCard: '#181030',
+  glass: 'rgba(255,255,255,0.06)',
+  glassBorder: 'rgba(255,255,255,0.14)',
+  purple: '#A855F7',
+  purpleSoft: '#C4B5FD',
+  pink: '#EC4899',
+  pinkLight: '#F472B6',
+  text: '#F5F3FF',
+  textSub: '#B9AEDB',
+  star: '#FBBF24',
+  starEmpty: 'rgba(255,255,255,0.18)',
 };
 
 export const spacing = {

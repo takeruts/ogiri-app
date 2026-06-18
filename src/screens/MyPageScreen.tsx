@@ -217,7 +217,7 @@ export const MyPageScreen = ({ navigation }: any) => {
                 style={styles.homeButton}
                 onPress={() => navigation.navigate('Game')}
               >
-                <Text style={styles.homeButtonText}>大喜利AI検定へ</Text>
+                <Text style={styles.homeButtonText}>お笑い偏差値診断へ</Text>
               </TouchableOpacity>
             )}
           </View>

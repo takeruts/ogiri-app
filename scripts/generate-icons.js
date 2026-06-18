@@ -1,6 +1,6 @@
-// 大喜利AI検定 ブランドロゴ／アイコン生成スクリプト
+// お笑い偏差値診断 ブランドロゴ／アイコン生成スクリプト
 // SVG をその場で定義し、@resvg/resvg-js で各サイズの PNG にラスタライズする。
-// 日本語は Windows 標準フォント（Meiryo）をシステムフォントとして読み込んで描画。
+// 世界観: ダーク × 紫→ピンクのネオン／ガラスモーフィズム。日本語は Meiryo で描画。
 const fs = require('fs');
 const path = require('path');
 const { Resvg } = require('@resvg/resvg-js');
@@ -8,86 +8,87 @@ const { Resvg } = require('@resvg/resvg-js');
 const ROOT = path.resolve(__dirname, '..');
 const FONT = 'Meiryo';
 
-// ブランドカラー（テーマの #007AFF 系）
-const C = { top: '#4DA6FF', bottom: '#0057D8', accent: '#FFD63A', white: '#ffffff' };
+// ブランドカラー
+const C = {
+  d1: '#2A1A4A', // 背景グラデ上（ダークパープル）
+  d2: '#0E0A1F', // 背景グラデ下（ほぼ黒紫）
+  white: '#F5F3FF',
+  pink: '#F472B6',
+  pinkDeep: '#EC4899',
+  purple: '#A855F7',
+  sub: '#C4B5FD',
+};
 
-// 正方形バッジ（icon / favicon 用）
+const defs = `
+  <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="${C.d1}"/>
+    <stop offset="1" stop-color="${C.d2}"/>
+  </linearGradient>
+  <linearGradient id="pill" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="${C.purple}"/>
+    <stop offset="1" stop-color="${C.pinkDeep}"/>
+  </linearGradient>
+  <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+    <feGaussianBlur stdDeviation="16" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>`;
+
+// 正方形バッジ本体（座標は 1024 系）。透過・背景込みの2バージョンを作る。
+function badgeBody(withBg) {
+  return `
+    ${withBg ? `<rect width="1024" height="1024" rx="225" fill="url(#bg)"/>` : ''}
+    <circle cx="512" cy="512" r="392" fill="none" stroke="#ffffff" stroke-opacity="0.12" stroke-width="10"/>
+    <text x="512" y="300" font-family="${FONT}" font-weight="700" font-size="116" fill="${C.white}" text-anchor="middle" dominant-baseline="central" letter-spacing="10">お笑い</text>
+    <text x="512" y="522" font-family="${FONT}" font-weight="900" font-size="208" fill="${C.pink}" text-anchor="middle" dominant-baseline="central" filter="url(#glow)">偏差値</text>
+    <rect x="252" y="690" width="520" height="158" rx="79" fill="url(#pill)" filter="url(#glow)"/>
+    <text x="512" y="769" font-family="${FONT}" font-weight="900" font-size="118" fill="#ffffff" text-anchor="middle" dominant-baseline="central" letter-spacing="14">診断</text>`;
+}
+
 function iconSVG() {
   return `<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="${C.top}"/>
-      <stop offset="1" stop-color="${C.bottom}"/>
-    </linearGradient>
-  </defs>
-  <rect width="1024" height="1024" rx="225" fill="url(#bg)"/>
-  <circle cx="512" cy="512" r="392" fill="none" stroke="#ffffff" stroke-opacity="0.28" stroke-width="10"/>
-  <text x="512" y="372" font-family="${FONT}" font-weight="700" font-size="270" fill="${C.white}" text-anchor="middle" dominant-baseline="central">大喜利</text>
-  <text x="512" y="556" font-family="${FONT}" font-weight="700" font-size="120" fill="${C.accent}" text-anchor="middle" dominant-baseline="central" letter-spacing="8">AI</text>
-  <rect x="247" y="636" width="530" height="180" rx="90" fill="${C.white}"/>
-  <text x="512" y="726" font-family="${FONT}" font-weight="700" font-size="130" fill="${C.bottom}" text-anchor="middle" dominant-baseline="central" letter-spacing="10">検定</text>
+  <defs>${defs}</defs>
+  ${badgeBody(true)}
 </svg>`;
 }
 
-// Android アダプティブアイコン前景（透過・セーフエリア内に収める円バッジ）
+// Android アダプティブ前景（透過・セーフエリア内の円バッジ）
 function adaptiveSVG() {
   return `<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="${C.top}"/>
-      <stop offset="1" stop-color="${C.bottom}"/>
-    </linearGradient>
-  </defs>
-  <circle cx="512" cy="512" r="330" fill="url(#bg)"/>
-  <text x="512" y="436" font-family="${FONT}" font-weight="700" font-size="150" fill="${C.white}" text-anchor="middle" dominant-baseline="central">大喜利</text>
-  <rect x="347" y="520" width="330" height="112" rx="56" fill="${C.white}"/>
-  <text x="512" y="576" font-family="${FONT}" font-weight="700" font-size="74" fill="${C.bottom}" text-anchor="middle" dominant-baseline="central" letter-spacing="4">AI検定</text>
+  <defs>${defs}</defs>
+  <circle cx="512" cy="512" r="334" fill="url(#bg)"/>
+  <text x="512" y="430" font-family="${FONT}" font-weight="700" font-size="74" fill="${C.white}" text-anchor="middle" dominant-baseline="central" letter-spacing="6">お笑い</text>
+  <text x="512" y="520" font-family="${FONT}" font-weight="900" font-size="132" fill="${C.pink}" text-anchor="middle" dominant-baseline="central" filter="url(#glow)">偏差値</text>
+  <rect x="386" y="600" width="252" height="92" rx="46" fill="url(#pill)"/>
+  <text x="512" y="647" font-family="${FONT}" font-weight="900" font-size="64" fill="#ffffff" text-anchor="middle" dominant-baseline="central" letter-spacing="8">診断</text>
 </svg>`;
 }
 
-// 左に正方形バッジを縮小配置するための共通パーツ
+// 縮小バッジ配置用
 function badgeGroup(tx, ty, scale) {
-  return `<g transform="translate(${tx},${ty}) scale(${scale})">
-    <rect width="1024" height="1024" rx="225" fill="url(#bg)"/>
-    <circle cx="512" cy="512" r="392" fill="none" stroke="#ffffff" stroke-opacity="0.28" stroke-width="10"/>
-    <text x="512" y="372" font-family="${FONT}" font-weight="700" font-size="270" fill="${C.white}" text-anchor="middle" dominant-baseline="central">大喜利</text>
-    <text x="512" y="556" font-family="${FONT}" font-weight="700" font-size="120" fill="${C.accent}" text-anchor="middle" dominant-baseline="central" letter-spacing="8">AI</text>
-    <rect x="247" y="636" width="530" height="180" rx="90" fill="${C.white}"/>
-    <text x="512" y="726" font-family="${FONT}" font-weight="700" font-size="130" fill="${C.bottom}" text-anchor="middle" dominant-baseline="central" letter-spacing="10">検定</text>
-  </g>`;
+  return `<g transform="translate(${tx},${ty}) scale(${scale})">${badgeBody(true)}</g>`;
 }
 
 // OGP / Twitter カード（1200x630）
 function ogSVG() {
   return `<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="${C.top}"/>
-      <stop offset="1" stop-color="${C.bottom}"/>
-    </linearGradient>
-  </defs>
+  <defs>${defs}</defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
-  ${badgeGroup(80, 151, 0.32)}
-  <text x="455" y="244" font-family="${FONT}" font-weight="700" font-size="100" fill="${C.white}" dominant-baseline="central">大喜利AI検定</text>
-  <text x="457" y="344" font-family="${FONT}" font-weight="700" font-size="42" fill="#EAF3FF" dominant-baseline="central">AIがあなたの大喜利を採点・判定！</text>
-  <text x="457" y="422" font-family="${FONT}" font-weight="400" font-size="28" fill="#CFE2FF" dominant-baseline="central">意外性・笑い・関連性・表現力の4観点でAI採点</text>
-  <text x="457" y="478" font-family="${FONT}" font-weight="400" font-size="28" fill="#CFE2FF" dominant-baseline="central">ログイン不要・無料で今すぐ挑戦</text>
+  ${badgeGroup(86, 151, 0.32)}
+  <text x="455" y="232" font-family="${FONT}" font-weight="900" font-size="84" fill="${C.white}">お笑い偏差値診断</text>
+  <text x="457" y="330" font-family="${FONT}" font-weight="700" font-size="40" fill="${C.pink}">あなたの笑いの才能、AIが本気で診断。</text>
+  <text x="457" y="408" font-family="${FONT}" font-weight="400" font-size="30" fill="${C.sub}">3分でわかる、お笑い偏差値。タイプ診断＆SNSシェア</text>
+  <text x="457" y="466" font-family="${FONT}" font-weight="400" font-size="28" fill="${C.sub}">ログイン不要・無料で今すぐ診断</text>
 </svg>`;
 }
 
-// スプラッシュ（白背景・中央にバッジ＋ブランド名）
+// スプラッシュ（ダーク背景・中央にバッジ＋ブランド名）
 function splashSVG() {
   return `<svg width="1242" height="1334" viewBox="0 0 1242 1334" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="${C.top}"/>
-      <stop offset="1" stop-color="${C.bottom}"/>
-    </linearGradient>
-  </defs>
-  <rect width="1242" height="1334" fill="#ffffff"/>
+  <defs>${defs}</defs>
+  <rect width="1242" height="1334" fill="${C.d2}"/>
   ${badgeGroup(341, 250, 0.547)}
-  <text x="621" y="980" font-family="${FONT}" font-weight="700" font-size="96" fill="${C.bottom}" text-anchor="middle" dominant-baseline="central">大喜利AI検定</text>
-  <text x="621" y="1062" font-family="${FONT}" font-weight="400" font-size="40" fill="#5B6B7B" text-anchor="middle" dominant-baseline="central">AIがあなたの大喜利を採点・判定！</text>
+  <text x="621" y="980" font-family="${FONT}" font-weight="900" font-size="92" fill="${C.white}" text-anchor="middle" dominant-baseline="central">お笑い偏差値診断</text>
+  <text x="621" y="1060" font-family="${FONT}" font-weight="400" font-size="38" fill="${C.sub}" text-anchor="middle" dominant-baseline="central">あなたの笑いの才能、AIが本気で診断。</text>
 </svg>`;
 }
 

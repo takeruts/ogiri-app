@@ -103,7 +103,7 @@ export const LoginScreen = () => {
     return (
       <View style={styles.container}>
         <View style={styles.content}>
-          <Text style={styles.title}>大喜利AI検定</Text>
+          <Text style={styles.title}>お笑い偏差値診断</Text>
           <View style={styles.successCard}>
             <Text style={styles.successIcon}>✉️</Text>
             <Text style={styles.successTitle}>リセットメールを送信しました</Text>
@@ -139,7 +139,7 @@ export const LoginScreen = () => {
         style={styles.container}
       >
         <View style={styles.content}>
-          <Text style={styles.title}>大喜利AI検定</Text>
+          <Text style={styles.title}>お笑い偏差値診断</Text>
           <Text style={styles.subtitle}>パスワードをリセット</Text>
           <Text style={styles.description}>
             登録したメールアドレスを入力してください。{'\n'}
@@ -188,7 +188,7 @@ export const LoginScreen = () => {
       style={styles.container}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>大喜利AI検定</Text>
+        <Text style={styles.title}>お笑い偏差値診断</Text>
         <Text style={styles.subtitle}>ログイン</Text>
 
         {error && (

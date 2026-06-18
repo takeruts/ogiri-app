@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 
-  <!-- 大喜利AI検定 (Kabeuchi Ogiri) - メインページ -->
+  <!-- お笑い偏差値診断 (Kabeuchi Ogiri) - メインページ -->
   <url>
     <loc>https://www.ogirihub.com/</loc>
     <lastmod>2026-01-12</lastmod>
@@ -13,12 +13,12 @@
     <priority>1.0</priority>
     <image:image>
       <image:loc>https://www.ogirihub.com/og-image.png</image:loc>
-      <image:title>大喜利AI検定 - AIと大喜利練習</image:title>
-      <image:caption>AIが出すお題に挑戦してあなたの大喜利の実力をAIが判定</image:caption>
+      <image:title>お笑い偏差値診断 - AIお笑いセンス診断</image:title>
+      <image:caption>AIがあなたのお笑いセンスを偏差値で診断</image:caption>
     </image:image>
   </url>
 
-  <!-- 検定（ゲーム）ページ -->
+  <!-- 診断（ゲーム）ページ -->
   <url>
     <loc>https://www.ogirihub.com/#/game</loc>
     <lastmod>2026-01-12</lastmod>
