@@ -359,6 +359,13 @@ export const ProfileEditScreen = ({ navigation }: any) => {
             <Text style={styles.buttonText}>パスワードを変更</Text>
           </TouchableOpacity>
         </View>
+
+        <TouchableOpacity
+          style={styles.homeNavButton}
+          onPress={() => navigation.navigate('MainTabs', { screen: 'Game' })}
+        >
+          <Text style={styles.homeNavButtonText}>🏠 ホームに戻る</Text>
+        </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -470,5 +477,23 @@ const styles = StyleSheet.create({
     height: 2,
     backgroundColor: colors.border,
     marginVertical: spacing.xxl,
+  },
+  homeNavButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.lg,
+    borderRadius: borderRadius.round,
+    alignItems: 'center',
+    marginTop: spacing.md,
+    marginBottom: spacing.xxl,
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 14,
+    elevation: 8,
+  },
+  homeNavButtonText: {
+    ...typography.button,
+    fontWeight: '700',
+    color: colors.textInverse,
   },
 });

@@ -89,6 +89,20 @@ export const AppNavigator = () => {
   return (
     <NavigationContainer
       ref={navRef}
+      documentTitle={{
+        formatter: (options, route) => {
+          const titles: Record<string, string> = {
+            Game: '診断',
+            History: 'ランキング',
+            MyPage: 'マイページ',
+            Auth: 'ログイン',
+            ProfileEdit: 'プロフィール編集',
+            PhotoGame: '写真で一言',
+          };
+          const sub = route?.name ? titles[route.name] : '';
+          return sub ? `お笑い偏差値診断 - ${sub}` : 'お笑い偏差値診断';
+        },
+      }}
       onReady={() => {
         const route = navRef.getCurrentRoute();
         if (route?.name) logScreenView(route.name);

@@ -191,6 +191,13 @@ export const MyPageScreen = ({ navigation }: any) => {
         </View>
       </View>
 
+      <TouchableOpacity
+        style={styles.homeNavButton}
+        onPress={() => navigation.navigate('Game')}
+      >
+        <Text style={styles.homeNavButtonText}>🏠 ホームに戻る</Text>
+      </TouchableOpacity>
+
       {stats && (
         <View style={styles.statsContainer}>
           <View style={styles.statRow}>
@@ -339,6 +346,24 @@ const styles = StyleSheet.create({
     ...typography.bodySmall,
     color: colors.textInverse,
     fontWeight: 'bold',
+  },
+  homeNavButton: {
+    backgroundColor: colors.primary,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.round,
+    alignItems: 'center',
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 14,
+    elevation: 8,
+  },
+  homeNavButtonText: {
+    ...typography.body,
+    fontWeight: '700',
+    color: colors.textInverse,
   },
   statsContainer: {
     backgroundColor: colors.surface,
