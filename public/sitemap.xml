@@ -8,7 +8,7 @@
   <!-- お笑い偏差値診断 (Kabeuchi Ogiri) - メインページ -->
   <url>
     <loc>https://www.ogirihub.com/</loc>
-    <lastmod>2026-01-12</lastmod>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -21,7 +21,7 @@
   <!-- 診断（ゲーム）ページ -->
   <url>
     <loc>https://www.ogirihub.com/#/game</loc>
-    <lastmod>2026-01-12</lastmod>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
@@ -29,7 +29,7 @@
   <!-- 履歴・ランキングページ -->
   <url>
     <loc>https://www.ogirihub.com/#/history</loc>
-    <lastmod>2026-01-12</lastmod>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -37,7 +37,7 @@
   <!-- マイページ（ログイン） -->
   <url>
     <loc>https://www.ogirihub.com/#/mypage</loc>
-    <lastmod>2026-01-12</lastmod>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>

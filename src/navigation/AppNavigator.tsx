@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
 import { Platform, Text } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useAuth } from '../contexts/AuthContext';
+import { colors } from '../constants/theme';
+import { logScreenView } from '../utils/analytics';
 
 import { GameScreen } from '../screens/GameScreen';
 import { PhotoGameScreen } from '../screens/PhotoGameScreen';
@@ -26,13 +28,15 @@ const MainTabs = () => {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: '#007AFF',
-        tabBarInactiveTintColor: '#999',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textLight,
         headerShown: false,
         tabBarStyle: {
           paddingBottom: 5,
           paddingTop: 5,
           height: 60,
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -69,6 +73,7 @@ const MainTabs = () => {
 
 export const AppNavigator = () => {
   const { loading } = useAuth();
+  const navRef = useNavigationContainerRef();
 
   // Web用のドキュメントタイトルを設定
   useEffect(() => {
@@ -82,7 +87,17 @@ export const AppNavigator = () => {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      ref={navRef}
+      onReady={() => {
+        const route = navRef.getCurrentRoute();
+        if (route?.name) logScreenView(route.name);
+      }}
+      onStateChange={() => {
+        const route = navRef.getCurrentRoute();
+        if (route?.name) logScreenView(route.name);
+      }}
+    >
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen
           name="MainTabs"

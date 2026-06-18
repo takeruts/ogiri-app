@@ -41,7 +41,9 @@
       "Bash(sed -i 's/検定モード/診断モード/g' README.md)",
       "Bash(node -e \"require\\('@babel/core'\\).transformFileSync\\('src/services/geminiService.ts',{presets:['babel-preset-expo']}\\);console.log\\('OK geminiService'\\)\")",
       "Bash(node -e \"require\\('@babel/core'\\).transformFileSync\\('src/services/geminiService.ts',{presets:['babel-preset-expo']}\\);console.log\\('OK'\\)\")",
-      "Bash(node -e \"require\\('@babel/core'\\).transformFileSync\\('src/services/geminiService.ts',{presets:['babel-preset-expo']}\\);console.log\\('OK transform'\\)\")"
+      "Bash(node -e \"require\\('@babel/core'\\).transformFileSync\\('src/services/geminiService.ts',{presets:['babel-preset-expo']}\\);console.log\\('OK transform'\\)\")",
+      "Bash(sed -i 's#<lastmod>2026-01-12</lastmod>#<lastmod>2026-06-19</lastmod>#g' public/sitemap.xml)",
+      "Bash(node -e \"require\\('@babel/core'\\).transformFileSync\\('src/utils/analytics.ts',{presets:['babel-preset-expo']}\\);console.log\\('OK analytics.ts'\\)\")"
     ]
   }
 }

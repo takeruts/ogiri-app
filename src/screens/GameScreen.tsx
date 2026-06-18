@@ -18,6 +18,7 @@ import { generateTopic, scoreAnswer, scoreTopic, saveUserTopic, TOPIC_SCORE_THRE
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { generateResultImage, shareOrDownloadImage } from '../utils/shareImage';
+import { logEvent } from '../utils/analytics';
 import {
   getNicknameInfo,
   registerNickname,
@@ -336,6 +337,13 @@ export const GameScreen = ({ route, navigation }: any) => {
       const scoreResult = await scoreAnswer(currentTopic, answer);
       setResult(scoreResult);
       setPhase('result');
+      logEvent('diagnose_complete', {
+        score: scoreResult.score,
+        deviation: getDeviation(scoreResult.score),
+        top_percent: getTopPercent(scoreResult.score),
+        diag_type: getDiagType(scoreResult, getAxes(scoreResult, answer)),
+        genre: currentGenre || undefined,
+      });
       await saveResult(currentTopic, answer, scoreResult, time);
     } catch (err) {
       setError('採点に失敗しました。もう一度お試しください。');
@@ -384,6 +392,7 @@ https://www.ogirihub.com/`;
     const encodedText = encodeURIComponent(text);
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodedText}`;
 
+    logEvent('share', { method: 'x_text', score: result.score });
     Linking.openURL(twitterUrl);
   };
 
@@ -408,7 +417,8 @@ https://www.ogirihub.com/`;
         answer,
       });
       if (blob) {
-        await shareOrDownloadImage(blob, 'owarai-hensachi.png');
+        const outcome = await shareOrDownloadImage(blob, 'owarai-hensachi.png');
+        logEvent('share', { method: 'image', outcome, score: result.score });
       } else {
         setError('画像の保存はWeb版で利用できます');
       }
