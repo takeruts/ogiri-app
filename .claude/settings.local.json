@@ -45,7 +45,10 @@
       "Bash(sed -i 's#<lastmod>2026-01-12</lastmod>#<lastmod>2026-06-19</lastmod>#g' public/sitemap.xml)",
       "Bash(node -e \"require\\('@babel/core'\\).transformFileSync\\('src/utils/analytics.ts',{presets:['babel-preset-expo']}\\);console.log\\('OK analytics.ts'\\)\")",
       "Bash(node -e \"['src/utils/analytics.ts','App.tsx'].forEach\\(f=>{require\\('@babel/core'\\).transformFileSync\\(f,{presets:['babel-preset-expo']}\\);console.log\\('OK',f\\)}\\)\")",
-      "Bash(node -e \"['src/screens/GameScreen.tsx','src/navigation/AppNavigator.tsx'].forEach\\(f=>{require\\('@babel/core'\\).transformFileSync\\(f,{presets:['babel-preset-expo']}\\);console.log\\('OK',f\\)}\\)\")"
+      "Bash(node -e \"['src/screens/GameScreen.tsx','src/navigation/AppNavigator.tsx'].forEach\\(f=>{require\\('@babel/core'\\).transformFileSync\\(f,{presets:['babel-preset-expo']}\\);console.log\\('OK',f\\)}\\)\")",
+      "Bash(node -e \"require\\('@babel/core'\\).transformFileSync\\('src/screens/MyPageScreen.tsx',{presets:['babel-preset-expo']}\\);console.log\\('OK MyPageScreen'\\)\")",
+      "Bash(node -e \"['src/screens/MyPageScreen.tsx','src/screens/ProfileEditScreen.tsx'].forEach\\(f=>{require\\('@babel/core'\\).transformFileSync\\(f,{presets:['babel-preset-expo']}\\);console.log\\('OK',f\\)}\\)\")",
+      "Bash(node -e \"['src/services/nicknameService.ts','src/hooks/useNicknameStatus.ts','src/screens/ProfileEditScreen.tsx','src/screens/SignUpScreen.tsx'].forEach\\(f=>{require\\('@babel/core'\\).transformFileSync\\(f,{presets:['babel-preset-expo']}\\);console.log\\('OK',f\\)}\\)\")"
     ]
   }
 }

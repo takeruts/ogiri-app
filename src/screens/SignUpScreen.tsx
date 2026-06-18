@@ -10,6 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import { useNicknameStatus } from '../hooks/useNicknameStatus';
 import { colors, spacing, borderRadius, typography, shadows } from '../constants/theme';
 
 export const SignUpScreen = () => {
@@ -22,9 +23,11 @@ export const SignUpScreen = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
   const { signUp } = useAuth();
+  const nameStatus = useNicknameStatus(nickname);
 
-  // すべての項目が入力されているかチェック
-  const isFormValid = nickname.trim() && email.trim() && password && confirmPassword;
+  // すべての項目が入力されているかチェック（ニックネーム重複時は無効）
+  const isFormValid =
+    nickname.trim() && email.trim() && password && confirmPassword && nameStatus !== 'taken';
 
   const handleSignUp = async () => {
     if (!isFormValid) {
@@ -85,12 +88,26 @@ export const SignUpScreen = () => {
         <Text style={styles.subtitle}>新規登録</Text>
 
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            nameStatus === 'taken' && styles.inputError,
+            nameStatus === 'available' && styles.inputOk,
+          ]}
           placeholder="ニックネーム"
           value={nickname}
           onChangeText={setNickname}
           autoCapitalize="none"
+          maxLength={20}
         />
+        {nameStatus === 'checking' && (
+          <Text style={styles.statusChecking}>重複を確認中...</Text>
+        )}
+        {nameStatus === 'available' && (
+          <Text style={styles.statusOk}>✓ このニックネームは使えます</Text>
+        )}
+        {nameStatus === 'taken' && (
+          <Text style={styles.statusNg}>✗ このニックネームは既に使われています</Text>
+        )}
 
         <TextInput
           style={styles.input}
@@ -180,6 +197,31 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     ...typography.body,
     backgroundColor: colors.surface,
+  },
+  inputError: {
+    borderColor: colors.error,
+    marginBottom: spacing.xs,
+  },
+  inputOk: {
+    borderColor: colors.success,
+    marginBottom: spacing.xs,
+  },
+  statusChecking: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
+  },
+  statusOk: {
+    ...typography.bodySmall,
+    color: colors.success,
+    fontWeight: '700',
+    marginBottom: spacing.md,
+  },
+  statusNg: {
+    ...typography.bodySmall,
+    color: colors.error,
+    fontWeight: '700',
+    marginBottom: spacing.md,
   },
   passwordContainer: {
     flexDirection: 'row',

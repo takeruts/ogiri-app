@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { getNicknameInfo } from '../services/nicknameService';
 import { colors, spacing, borderRadius, typography, shadows } from '../constants/theme';
 
 // ウェブとモバイルの両方で動作する確認ダイアログ
@@ -56,6 +57,7 @@ interface UserStats {
 export const MyPageScreen = ({ navigation }: any) => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
+  const [nickname, setNickname] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const { user, signOut } = useAuth();
@@ -64,6 +66,10 @@ export const MyPageScreen = ({ navigation }: any) => {
     if (!user) return;
 
     try {
+      // ニックネームを取得
+      const info = await getNicknameInfo(user.id);
+      setNickname(info?.nickname ?? null);
+
       // 履歴を取得
       const { data: historyData, error: historyError } = await supabase
         .from('game_history')
@@ -160,7 +166,18 @@ export const MyPageScreen = ({ navigation }: any) => {
       </View>
 
       <View style={styles.profileSection}>
-        <Text style={styles.email}>{user?.email}</Text>
+        <View style={styles.profileRow}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>
+              {(nickname || user?.email || '?').charAt(0).toUpperCase()}
+            </Text>
+          </View>
+          <View style={styles.profileInfo}>
+            <Text style={styles.nicknameLabel}>ニックネーム</Text>
+            <Text style={styles.nickname}>{nickname || '未設定'}</Text>
+            <Text style={styles.email}>{user?.email}</Text>
+          </View>
+        </View>
         <View style={styles.buttonRow}>
           <TouchableOpacity
             style={styles.editButton}
@@ -259,10 +276,41 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     ...shadows.sm,
   },
-  email: {
-    ...typography.body,
+  profileRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: borderRadius.round,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.lg,
+  },
+  avatarText: {
+    fontSize: 26,
+    fontWeight: '900',
+    color: colors.textInverse,
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  nicknameLabel: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  nickname: {
+    ...typography.h3,
     color: colors.text,
-    marginBottom: spacing.md,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  email: {
+    ...typography.bodySmall,
+    color: colors.textLight,
   },
   buttonRow: {
     flexDirection: 'row',

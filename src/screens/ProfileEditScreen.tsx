@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useNicknameStatus } from '../hooks/useNicknameStatus';
 import { colors, spacing, borderRadius, typography, shadows } from '../constants/theme';
 
 // ウェブとモバイルの両方で動作するアラート
@@ -48,6 +49,7 @@ export const ProfileEditScreen = ({ navigation }: any) => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const nameStatus = useNicknameStatus(username, user?.id);
 
   useEffect(() => {
     fetchProfile();
@@ -110,6 +112,29 @@ export const ProfileEditScreen = ({ navigation }: any) => {
           });
 
         if (error) throw error;
+      }
+
+      // nicknames テーブル（ランキング・マイページに表示される名前）も同期
+      const newName = username.trim();
+      const { data: takenRows } = await supabase
+        .from('nicknames')
+        .select('id, user_id')
+        .ilike('nickname', newName)
+        .limit(1);
+      const taken = takenRows && takenRows[0];
+      if (taken && taken.user_id !== user!.id) {
+        showAlert('エラー', 'このニックネームは既に使われています。別の名前にしてください。');
+        return;
+      }
+      const { data: nickRows } = await supabase
+        .from('nicknames')
+        .select('id')
+        .eq('user_id', user!.id)
+        .limit(1);
+      if (nickRows && nickRows[0]) {
+        await supabase.from('nicknames').update({ nickname: newName }).eq('id', nickRows[0].id);
+      } else {
+        await supabase.from('nicknames').insert({ nickname: newName, user_id: user!.id });
       }
 
       showAlert('成功', 'ニックネームを更新しました');
@@ -211,17 +236,30 @@ export const ProfileEditScreen = ({ navigation }: any) => {
           <Text style={styles.sectionTitle}>ニックネーム</Text>
           <Text style={styles.helpText}>ランキングに表示される名前です</Text>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              nameStatus === 'taken' && styles.inputError,
+              nameStatus === 'available' && styles.inputOk,
+            ]}
             placeholder="ニックネーム"
             value={username}
             onChangeText={setUsername}
             autoCapitalize="none"
             maxLength={20}
           />
+          {nameStatus === 'checking' && (
+            <Text style={styles.statusChecking}>重複を確認中...</Text>
+          )}
+          {nameStatus === 'available' && (
+            <Text style={styles.statusOk}>✓ このニックネームは使えます</Text>
+          )}
+          {nameStatus === 'taken' && (
+            <Text style={styles.statusNg}>✗ このニックネームは既に使われています</Text>
+          )}
           <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
+            style={[styles.button, (loading || nameStatus === 'taken') && styles.buttonDisabled]}
             onPress={handleUpdateUsername}
-            disabled={loading}
+            disabled={loading || nameStatus === 'taken'}
           >
             <Text style={styles.buttonText}>ニックネームを更新</Text>
           </TouchableOpacity>
@@ -366,6 +404,31 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     ...typography.body,
     backgroundColor: colors.surface,
+  },
+  inputError: {
+    borderColor: colors.error,
+    marginBottom: spacing.xs,
+  },
+  inputOk: {
+    borderColor: colors.success,
+    marginBottom: spacing.xs,
+  },
+  statusChecking: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
+  },
+  statusOk: {
+    ...typography.bodySmall,
+    color: colors.success,
+    fontWeight: '700',
+    marginBottom: spacing.md,
+  },
+  statusNg: {
+    ...typography.bodySmall,
+    color: colors.error,
+    fontWeight: '700',
+    marginBottom: spacing.md,
   },
   passwordContainer: {
     flexDirection: 'row',

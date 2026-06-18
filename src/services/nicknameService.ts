@@ -73,6 +73,32 @@ export const checkNicknameAvailable = async (nickname: string): Promise<boolean>
   }
 };
 
+// 他のユーザーが既に使っているニックネームか（自分のものは除外）
+export const isNicknameTaken = async (
+  nickname: string,
+  excludeUserId?: string
+): Promise<boolean> => {
+  const name = nickname.trim();
+  if (!name) return false;
+  try {
+    const { data, error } = await supabase
+      .from('nicknames')
+      .select('id, user_id')
+      .ilike('nickname', name)
+      .limit(1);
+
+    if (error) throw error;
+    const row = data && data[0];
+    if (!row) return false;
+    // 自分自身のニックネームは重複扱いにしない
+    if (excludeUserId && row.user_id === excludeUserId) return false;
+    return true;
+  } catch (error) {
+    console.error('ニックネーム重複チェックエラー:', error);
+    return false; // 判定不能なときは通す（登録時に最終チェックされる）
+  }
+};
+
 // ニックネームを登録
 export const registerNickname = async (
   nickname: string,
