@@ -1332,6 +1332,13 @@ export const generateTopic = async (): Promise<TopicResult> => {
   return { ...topic, isFallback: !topic.isUserSubmitted };
 };
 
+// 「今日の検定」用：日付で決定的に選ぶ日替わりお題
+export const getDailyTopic = (): TopicResult => {
+  const dayNum = Math.floor(Date.now() / 86400000); // 1日ごとに変わる
+  const idx = dayNum % fallbackTopics.length;
+  return { ...fallbackTopics[idx], isFallback: true };
+};
+
 // 回答を採点する
 // お笑いセンスの4軸（各1〜5）
 export interface DiagAxes {

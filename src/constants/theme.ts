@@ -1,23 +1,23 @@
 // オオギリ検定 - モダンでポップで優しいテーマ
 
 export const colors = {
-  // Primary - ネオンパープル
-  primary: '#A855F7',
-  primaryLight: '#C084FC',
-  primaryDark: '#7C3AED',
-  primarySoft: 'rgba(168,85,247,0.16)',
+  // Primary - ディープパープル（受験ボタン等）
+  primary: '#7C3AED',
+  primaryLight: '#8B5CF6',
+  primaryDark: '#6D28D9',
+  primarySoft: 'rgba(124,58,237,0.16)',
 
-  // Secondary - ピンク
-  secondary: '#F472B6',
-  secondaryLight: '#F9A8D4',
-  secondaryDark: '#EC4899',
-  secondarySoft: 'rgba(236,72,153,0.16)',
+  // Secondary - ゴールド
+  secondary: '#F59E0B',
+  secondaryLight: '#FCD34D',
+  secondaryDark: '#D97706',
+  secondarySoft: 'rgba(245,158,11,0.16)',
 
-  // Accent - ホットピンク
-  accent: '#EC4899',
-  accentLight: '#F472B6',
-  accentDark: '#DB2777',
-  accentSoft: 'rgba(236,72,153,0.16)',
+  // Accent - ゴールド（段位・認定証・ハイライト）
+  accent: '#F59E0B',
+  accentLight: '#FCD34D',
+  accentDark: '#D97706',
+  accentSoft: 'rgba(245,158,11,0.16)',
 
   // Success - ミントグリーン
   success: '#34D399',
@@ -33,37 +33,38 @@ export const colors = {
   error: '#FB7185',
   errorSoft: 'rgba(251,113,133,0.16)',
 
-  // Neutral - ダーク（診断の世界観）
-  background: '#0E0A1F',
-  surface: '#181030',
-  surfaceHover: '#221640',
-  border: 'rgba(255,255,255,0.14)',
-  borderLight: 'rgba(255,255,255,0.08)',
+  // Neutral - ダークネイビー（検定の世界観）
+  background: '#0F172A',
+  surface: '#111827',
+  surfaceHover: '#1E293B',
+  border: 'rgba(255,255,255,0.12)',
+  borderLight: 'rgba(255,255,255,0.06)',
 
   // Text colors
-  text: '#F5F3FF',
-  textSecondary: '#B9AEDB',
-  textLight: '#8B7FB0',
+  text: '#F8FAFC',
+  textSecondary: '#94A3B8',
+  textLight: '#64748B',
   textInverse: '#FFFFFF',
 
   // Special
-  overlay: 'rgba(8,5,18,0.72)',
-  shadow: 'rgba(168,85,247,0.30)',
+  overlay: 'rgba(2,6,23,0.72)',
+  shadow: 'rgba(245,158,11,0.30)',
 };
 
 // 診断（お笑いセンス診断）用デザイントークン
 // ダーク × 紫→ピンクのネオン／ガラスモーフィズムの世界観
 export const diag = {
-  bg: '#0E0A1F',
-  bgCard: '#181030',
-  glass: 'rgba(255,255,255,0.06)',
-  glassBorder: 'rgba(255,255,255,0.14)',
-  purple: '#A855F7',
-  purpleSoft: '#C4B5FD',
-  pink: '#EC4899',
-  pinkLight: '#F472B6',
-  text: '#F5F3FF',
-  textSub: '#B9AEDB',
+  bg: '#0F172A',
+  bgCard: '#111827',
+  glass: 'rgba(255,255,255,0.05)',
+  glassBorder: 'rgba(255,255,255,0.12)',
+  purple: '#7C3AED',
+  purpleSoft: '#A5B4FC',
+  // 旧ピンク枠 → 検定ゴールドに統一（偏差値・ネオンボタン等で使用）
+  pink: '#F59E0B',
+  pinkLight: '#FCD34D',
+  text: '#F8FAFC',
+  textSub: '#94A3B8',
   star: '#FBBF24',
   starEmpty: 'rgba(255,255,255,0.18)',
   // 検定（認定証・段位）用ゴールド

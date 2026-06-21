@@ -168,15 +168,31 @@ export const HistoryScreen = ({ navigation }: any) => {
     });
   };
 
+  // 順位 → 称号（検定の格付け）
+  const getRankTitle = (rank: number) => {
+    if (rank === 1) return { label: '名人', color: '#FCD34D' };
+    if (rank <= 3) return { label: '師範', color: '#F59E0B' };
+    if (rank <= 10) return { label: '達人', color: '#FB7185' };
+    if (rank <= 30) return { label: '精鋭', color: colors.primary };
+    return { label: '挑戦者', color: colors.textSecondary };
+  };
+
   // トップ100ランキング表示
-  const renderTopScoreItem = ({ item, index }: { item: TopScoreItem; index: number }) => (
-    <View style={styles.rankingCard}>
+  const renderTopScoreItem = ({ item, index }: { item: TopScoreItem; index: number }) => {
+    const title = getRankTitle(index + 1);
+    return (
+    <View style={[styles.rankingCard, index < 3 && { borderColor: title.color, borderWidth: 1.5 }]}>
       <View style={styles.rankBadge}>
         <Text style={styles.rankText}>{getRankEmoji(index + 1)}</Text>
       </View>
       <View style={styles.rankingContent}>
         <View style={styles.rankingHeader}>
-          <Text style={styles.rankingNickname}>{item.nickname}</Text>
+          <View style={styles.rankingNameRow}>
+            <View style={[styles.titleChip, { borderColor: title.color }]}>
+              <Text style={[styles.titleChipText, { color: title.color }]}>{title.label}</Text>
+            </View>
+            <Text style={styles.rankingNickname}>{item.nickname}</Text>
+          </View>
           <View style={[styles.scoreBadge, { backgroundColor: getScoreColor(item.score) }]}>
             <Text style={styles.scoreBadgeText}>{item.score}点</Text>
           </View>
@@ -196,7 +212,8 @@ export const HistoryScreen = ({ navigation }: any) => {
         </View>
       </View>
     </View>
-  );
+    );
+  };
 
   // 人気お題表示
   const renderPopularTopicItem = ({ item, index }: { item: PopularTopicItem; index: number }) => (
@@ -283,7 +300,7 @@ export const HistoryScreen = ({ navigation }: any) => {
       keyExtractor={(item) => item.id}
       ListHeaderComponent={
         <View style={styles.tabHeader}>
-          <Text style={styles.tabTitle}>高得点ランキング TOP100</Text>
+          <Text style={styles.tabTitle}>🏅 今週の師範 TOP100</Text>
           <Text style={styles.tabSubtitle}>同点の場合は回答時間が短い順</Text>
         </View>
       }
@@ -544,6 +561,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: spacing.sm,
+  },
+  rankingNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    flex: 1,
+  },
+  titleChip: {
+    borderWidth: 1,
+    borderRadius: borderRadius.round,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 1,
+  },
+  titleChipText: {
+    fontSize: 11,
+    fontWeight: '800',
   },
   rankingNickname: {
     ...typography.body,

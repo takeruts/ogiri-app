@@ -14,7 +14,7 @@ import {
   Linking,
 } from 'react-native';
 import { colors, spacing, borderRadius, typography, shadows, diag } from '../constants/theme';
-import { generateTopic, scoreAnswer, scoreTopic, saveUserTopic, TOPIC_SCORE_THRESHOLD, ScoreResult, SCORING_CRITERIA, TopicResult, TopicScoreResult } from '../services/geminiService';
+import { generateTopic, getDailyTopic, scoreAnswer, scoreTopic, saveUserTopic, TOPIC_SCORE_THRESHOLD, ScoreResult, SCORING_CRITERIA, TopicResult, TopicScoreResult } from '../services/geminiService';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { generateResultImage, shareOrDownloadImage } from '../utils/shareImage';
@@ -75,7 +75,12 @@ export const GameScreen = ({ route, navigation }: any) => {
     totalUsers: number | null;
     games: number;
   } | null>(null);
+  const [examCategory, setExamCategory] = useState<'text' | 'speed' | 'idea'>('text');
+  const [dailyTopic, setDailyTopic] = useState<TopicResult | null>(null);
+  const [dailyCount, setDailyCount] = useState<number | null>(null);
+  const [speedLeft, setSpeedLeft] = useState<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
+  const submitRef = useRef<() => void>(() => {});
   const { user, loading: authLoading } = useAuth();
 
   // ルートパラメータからお題を取得（ランキングや人気お題から挑戦する場合）
@@ -92,10 +97,64 @@ export const GameScreen = ({ route, navigation }: any) => {
     checkExistingNickname();
   }, [user, authLoading]);
 
-  // スタート画面に戻るたびに段位（受験成績）を取得
+  // スタート画面に戻るたびに段位（受験成績）と今日の検定を取得
   useEffect(() => {
-    if (phase === 'start') fetchUserStats();
+    if (phase === 'start') {
+      fetchUserStats();
+      fetchDaily();
+    }
   }, [phase, user]);
+
+  // 最新の回答送信ハンドラを参照に保持（タイマーから安全に呼ぶため）
+  useEffect(() => {
+    submitRef.current = () => {
+      if (answer.trim()) {
+        handleSubmitAnswer();
+      } else {
+        setError('時間切れ！次はスピード勝負で');
+        handleGoHome();
+      }
+    };
+  });
+
+  // 瞬発力検定の制限時間（回答中のみカウントダウン）
+  useEffect(() => {
+    if (phase === 'answering' && examCategory === 'speed') {
+      setSpeedLeft(60);
+      const id = setInterval(() => {
+        setSpeedLeft((s) => {
+          if (s === null) return s;
+          if (s <= 1) {
+            clearInterval(id);
+            submitRef.current();
+            return 0;
+          }
+          return s - 1;
+        });
+      }, 1000);
+      return () => clearInterval(id);
+    }
+    setSpeedLeft(null);
+    return undefined;
+  }, [phase, examCategory]);
+
+  // 今日の検定（日替わりお題＋本日の受験者数）
+  const fetchDaily = async () => {
+    const t = getDailyTopic();
+    setDailyTopic(t);
+    try {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      const { count } = await supabase
+        .from('game_history')
+        .select('id', { count: 'exact', head: true })
+        .eq('topic', t.topic)
+        .gte('created_at', start.toISOString());
+      setDailyCount(count ?? 0);
+    } catch (e) {
+      setDailyCount(null);
+    }
+  };
 
   // ユーザーの段位・偏差値・全国順位を集計
   const fetchUserStats = async () => {
@@ -465,9 +524,42 @@ export const GameScreen = ({ route, navigation }: any) => {
 
   // 総合診断を開始（複数お題に連続回答）
   const handleStartDiagnosis = async () => {
+    setExamCategory('text');
     setDiagMode(true);
     setDiagResults([]);
     await handleGenerateTopic();
+  };
+
+  // 瞬発力検定（1問・制限時間つき）
+  const handleStartSpeed = async () => {
+    setExamCategory('speed');
+    setDiagMode(false);
+    await handleGenerateTopic();
+  };
+
+  // 発想力検定（1問・じっくり）
+  const handleStartIdea = async () => {
+    setExamCategory('idea');
+    setDiagMode(false);
+    await handleGenerateTopic();
+  };
+
+  // 今日の検定（日替わりお題を受験）
+  const handleStartDaily = () => {
+    if (!dailyTopic) return;
+    setExamCategory('text');
+    setDiagMode(false);
+    setCurrentTopic(dailyTopic.topic);
+    setCurrentGenre(dailyTopic.genre);
+    setIsFallbackTopic(true);
+    setIsUserSubmittedTopic(false);
+    setTopicSubmittedBy(undefined);
+    setTopicOriginalScore(undefined);
+    setAnswer('');
+    setResult(null);
+    setAnswerTime(null);
+    startTimeRef.current = Date.now();
+    setPhase('answering');
   };
 
   // 診断結果の集計
@@ -585,6 +677,8 @@ https://www.ogirihub.com/`;
     setError(null);
     setDiagMode(false);
     setDiagResults([]);
+    setExamCategory('text');
+    setSpeedLeft(null);
   };
 
   const handleShareToX = () => {
@@ -838,34 +932,46 @@ https://www.ogirihub.com/`;
         </TouchableOpacity>
       ) : (
         <>
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={handleStartDiagnosis}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color={colors.textInverse} />
-            ) : (
-              <Text style={styles.primaryButtonText}>📝 検定を受験する（{DIAG_COUNT}問）</Text>
-            )}
-          </TouchableOpacity>
+          {dailyTopic && (
+            <TouchableOpacity style={styles.dailyBanner} onPress={handleStartDaily} disabled={loading}>
+              <View style={styles.dailyBannerHeader}>
+                <Text style={styles.dailyBannerLabel}>📅 本日の検定</Text>
+                <Text style={styles.dailyBannerCount}>受験者 {dailyCount ?? '—'}人</Text>
+              </View>
+              <Text style={styles.dailyBannerTopic} numberOfLines={2}>{dailyTopic.topic}</Text>
+              <Text style={styles.dailyBannerCta}>タップして受験 →</Text>
+            </TouchableOpacity>
+          )}
 
-          <TouchableOpacity
-            style={styles.singleModeButton}
-            onPress={handleGenerateTopic}
-            disabled={loading}
-          >
-            <Text style={styles.singleModeButtonText}>大喜利に答えて採点</Text>
-          </TouchableOpacity>
+          <Text style={styles.categoryHeading}>検定カテゴリ</Text>
+          <View style={styles.categoryGrid}>
+            <TouchableOpacity
+              style={[styles.catCard, styles.catCardPrimary]}
+              onPress={handleStartDiagnosis}
+              disabled={loading}
+            >
+              <Text style={styles.catEmoji}>📝</Text>
+              <Text style={styles.catTitle}>文章大喜利検定</Text>
+              <Text style={styles.catSub}>総合{DIAG_COUNT}問・段位認定</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.catCard} onPress={handleStartSpeed} disabled={loading}>
+              <Text style={styles.catEmoji}>⚡</Text>
+              <Text style={styles.catTitle}>瞬発力検定</Text>
+              <Text style={styles.catSub}>制限時間60秒・1問</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.catCard} onPress={handleStartIdea} disabled={loading}>
+              <Text style={styles.catEmoji}>💡</Text>
+              <Text style={styles.catTitle}>発想力検定</Text>
+              <Text style={styles.catSub}>1問・じっくり</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.catCard} onPress={() => navigation.navigate('PhotoGame')}>
+              <Text style={styles.catEmoji}>📷</Text>
+              <Text style={styles.catTitle}>写真で一言検定</Text>
+              <Text style={styles.catSub}>画像にボケる</Text>
+            </TouchableOpacity>
+          </View>
         </>
       )}
-
-      <TouchableOpacity
-        style={styles.photoModeButton}
-        onPress={() => navigation.navigate('PhotoGame')}
-      >
-        <Text style={styles.photoModeButtonText}>📷 写真で一言</Text>
-      </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.submitTopicButton}
@@ -975,6 +1081,14 @@ https://www.ogirihub.com/`;
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        {examCategory === 'speed' && speedLeft !== null && (
+          <View style={[styles.speedTimer, speedLeft <= 10 && styles.speedTimerWarn]}>
+            <Text style={styles.speedTimerLabel}>⚡ 瞬発力検定・制限時間</Text>
+            <Text style={[styles.speedTimerValue, speedLeft <= 10 && styles.speedTimerValueWarn]}>
+              {speedLeft}秒
+            </Text>
+          </View>
+        )}
         {diagMode && (
           <View style={styles.diagProgress}>
             <Text style={styles.diagProgressText}>
@@ -2502,5 +2616,123 @@ const styles = StyleSheet.create({
     backgroundColor: diag.gold,
     opacity: 0.4,
     marginVertical: spacing.lg,
+  },
+
+  // 今日の検定バナー
+  dailyBanner: {
+    width: '100%',
+    backgroundColor: diag.bgCard,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: diag.glassBorder,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+  },
+  dailyBannerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  dailyBannerLabel: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: diag.goldLight,
+    letterSpacing: 1,
+  },
+  dailyBannerCount: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  dailyBannerTopic: {
+    ...typography.body,
+    fontWeight: '700',
+    color: colors.text,
+    lineHeight: 24,
+  },
+  dailyBannerCta: {
+    fontSize: 12,
+    color: colors.primary,
+    fontWeight: '700',
+    marginTop: spacing.sm,
+    textAlign: 'right',
+  },
+
+  // 検定カテゴリ
+  categoryHeading: {
+    width: '100%',
+    fontSize: 14,
+    fontWeight: '800',
+    color: colors.textSecondary,
+    letterSpacing: 1,
+    marginBottom: spacing.sm,
+  },
+  categoryGrid: {
+    width: '100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  catCard: {
+    width: '48%',
+    backgroundColor: diag.bgCard,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: diag.glassBorder,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    alignItems: 'center',
+  },
+  catCardPrimary: {
+    borderColor: diag.gold,
+    backgroundColor: diag.goldSoft,
+  },
+  catEmoji: {
+    fontSize: 30,
+    marginBottom: spacing.xs,
+  },
+  catTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: colors.text,
+    textAlign: 'center',
+  },
+  catSub: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 2,
+    textAlign: 'center',
+  },
+
+  // 瞬発力検定タイマー
+  speedTimer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: diag.glass,
+    borderWidth: 1,
+    borderColor: diag.glassBorder,
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
+  },
+  speedTimerWarn: {
+    borderColor: colors.error,
+    backgroundColor: 'rgba(251,113,133,0.12)',
+  },
+  speedTimerLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.textSecondary,
+  },
+  speedTimerValue: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: diag.goldLight,
+  },
+  speedTimerValueWarn: {
+    color: colors.error,
   },
 });

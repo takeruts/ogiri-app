@@ -52,7 +52,17 @@
       "Bash(node -e \"require\\('@babel/core'\\).transformFileSync\\('src/navigation/AppNavigator.tsx',{presets:['babel-preset-expo']}\\);console.log\\('OK AppNavigator'\\)\")",
       "Bash(node -e \"['src/screens/GameScreen.tsx','src/utils/shareImage.ts'].forEach\\(f=>{require\\('@babel/core'\\).transformFileSync\\(f,{presets:['babel-preset-expo']}\\);console.log\\('OK',f\\)}\\)\")",
       "Bash(node -e \"['src/screens/GameScreen.tsx','src/constants/theme.ts','src/utils/shareImage.ts'].forEach\\(f=>{require\\('@babel/core'\\).transformFileSync\\(f,{presets:['babel-preset-expo']}\\);console.log\\('OK',f\\)}\\)\")",
-      "Bash(node scripts/preview-dan.js)"
+      "Bash(node scripts/preview-dan.js)",
+      "Bash(sed -i -e \"s/#0E0A1F/#0F172A/g\" -e \"s/themeColor: '#A855F7'/themeColor: '#F59E0B'/\" app.config.js)",
+      "Bash(sed -i -e 's/\"#0E0A1F\"/\"#0F172A\"/g' -e 's/\"themeColor\": \"#A855F7\"/\"themeColor\": \"#F59E0B\"/' app.json)",
+      "Bash(sed -i -e 's/#0E0A1F/#0F172A/g' -e 's/border-top: 4px solid #EC4899/border-top: 4px solid #F59E0B/' -e 's/color: #C4B5FD/color: #94A3B8/' public/index.html)",
+      "Bash(node -e \"require\\('@babel/core'\\).transformFileSync\\('src/constants/theme.ts',{presets:['babel-preset-expo']}\\);console.log\\('OK theme'\\)\")",
+      "Bash(node -e \"require\\('./app.config.js'\\);console.log\\('OK'\\)\")",
+      "Bash(rm -f preview-dan.png)",
+      "Bash(node -e \"['src/screens/HistoryScreen.tsx','src/services/geminiService.ts'].forEach\\(f=>{require\\('@babel/core'\\).transformFileSync\\(f,{presets:['babel-preset-expo']}\\);console.log\\('OK',f\\)}\\)\")",
+      "Bash(node -e \"require\\('@babel/core'\\).transformFileSync\\('src/screens/GameScreen.tsx',{presets:['babel-preset-expo']}\\);console.log\\('OK GameScreen'\\)\")",
+      "Bash(node scripts/preview-home.js)",
+      "Bash(rm -f preview-home.png)"
     ]
   }
 }
