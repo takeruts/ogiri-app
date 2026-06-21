@@ -844,11 +844,10 @@ https://www.ogirihub.com/`;
   const renderNicknameScreen = () => (
     <View style={styles.centerContent}>
       <Image
-        source={require('../../assets/logo.png')}
-        style={styles.logo}
+        source={require('../../assets/logo-wide.png')}
+        style={styles.startBanner}
         resizeMode="contain"
       />
-      <Text style={styles.title}>オオギリ検定</Text>
       <Text style={styles.subtitle}>ニックネームを設定してください</Text>
       <Text style={styles.description}>
         {nicknameError || 'マイページからニックネームを設定すると\nゲームを開始できます'}
@@ -865,11 +864,10 @@ https://www.ogirihub.com/`;
   const renderStartScreen = () => (
     <ScrollView contentContainerStyle={styles.startContent}>
       <Image
-        source={require('../../assets/logo.png')}
-        style={styles.logo}
+        source={require('../../assets/logo-wide.png')}
+        style={styles.startBanner}
         resizeMode="contain"
       />
-      <Text style={styles.title}>オオギリ検定</Text>
 
       {examStats ? (
         <View style={styles.rankCard}>
@@ -1518,11 +1516,10 @@ https://www.ogirihub.com/`;
       <View style={styles.container}>
         <View style={styles.header}>
           <Image
-            source={require('../../assets/logo.png')}
-            style={styles.headerLogo}
+            source={require('../../assets/logo-wide.png')}
+            style={styles.headerBanner}
             resizeMode="contain"
           />
-          <Text style={styles.headerTitle}>オオギリ検定</Text>
         </View>
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -1550,7 +1547,11 @@ https://www.ogirihub.com/`;
           </TouchableOpacity>
         </View>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>オオギリ検定</Text>
+          <Image
+            source={require('../../assets/logo-wide.png')}
+            style={styles.headerBanner}
+            resizeMode="contain"
+          />
         </View>
         {nickname && phase !== 'nickname' ? (
           <Text style={styles.headerNickname}>{nickname}</Text>
@@ -1615,10 +1616,20 @@ const styles = StyleSheet.create({
     height: 26,
     marginRight: spacing.sm,
   },
+  headerBanner: {
+    height: 30,
+    aspectRatio: 1200 / 280,
+  },
   headerTitle: {
     fontSize: 18,
     fontWeight: '800',
     color: colors.text,
+  },
+  startBanner: {
+    width: '100%',
+    maxWidth: 300,
+    aspectRatio: 1200 / 280,
+    marginBottom: spacing.lg,
   },
   headerNickname: {
     ...typography.caption,

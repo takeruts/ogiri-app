@@ -89,6 +89,19 @@ function splashSVG() {
 </svg>`;
 }
 
+// 横長ロゴ（ヘッダー／スタート画面でタイトル代わりに使う・透過）
+function bannerSVG() {
+  return `<svg width="1200" height="280" viewBox="0 0 1200 280" xmlns="http://www.w3.org/2000/svg">
+  <defs>${defs}</defs>
+  <g transform="translate(150,140)">
+    <circle r="118" fill="none" stroke="url(#goldg)" stroke-width="11"/>
+    <circle r="98" fill="none" stroke="${C.gold}" stroke-opacity="0.45" stroke-width="3"/>
+    <text x="0" y="6" font-family="${FONT}" font-weight="900" font-size="120" fill="url(#goldg)" text-anchor="middle" dominant-baseline="central" filter="url(#glow)">★</text>
+  </g>
+  <text x="320" y="140" font-family="${FONT}" font-weight="900" font-size="120" fill="${C.white}" dominant-baseline="central">オオギリ<tspan fill="${C.goldLight}">検定</tspan></text>
+</svg>`;
+}
+
 function render(svg, outPath, width) {
   const opts = {
     font: { loadSystemFonts: true, defaultFontFamily: FONT },
@@ -107,4 +120,6 @@ render(splashSVG(), path.join(ROOT, 'assets/splash.png'));
 render(iconSVG(), path.join(ROOT, 'assets/logo.png'), 512);
 render(iconSVG(), path.join(ROOT, 'public/logo.png'), 512);
 render(ogSVG(), path.join(ROOT, 'public/og-image.png'));
+render(bannerSVG(), path.join(ROOT, 'assets/logo-wide.png'));
+render(bannerSVG(), path.join(ROOT, 'public/logo-wide.png'));
 console.log('done');
