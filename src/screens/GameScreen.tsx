@@ -843,11 +843,7 @@ https://www.ogirihub.com/`;
   // ニックネーム設定画面（ログインユーザーでニックネーム未設定の場合のみ）
   const renderNicknameScreen = () => (
     <View style={styles.centerContent}>
-      <Image
-        source={require('../../assets/logo-wide.png')}
-        style={styles.startBanner}
-        resizeMode="contain"
-      />
+      <Text style={styles.title}>オオギリ検定</Text>
       <Text style={styles.subtitle}>ニックネームを設定してください</Text>
       <Text style={styles.description}>
         {nicknameError || 'マイページからニックネームを設定すると\nゲームを開始できます'}
@@ -863,11 +859,7 @@ https://www.ogirihub.com/`;
 
   const renderStartScreen = () => (
     <ScrollView contentContainerStyle={styles.startContent}>
-      <Image
-        source={require('../../assets/logo-wide.png')}
-        style={styles.startBanner}
-        resizeMode="contain"
-      />
+      <Text style={styles.title}>オオギリ検定</Text>
 
       {examStats ? (
         <View style={styles.rankCard}>
@@ -1515,11 +1507,7 @@ https://www.ogirihub.com/`;
     return (
       <View style={styles.container}>
         <View style={styles.header}>
-          <Image
-            source={require('../../assets/logo-wide.png')}
-            style={styles.headerBanner}
-            resizeMode="contain"
-          />
+          <Text style={styles.headerTitle}>オオギリ検定</Text>
         </View>
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -1547,11 +1535,7 @@ https://www.ogirihub.com/`;
           </TouchableOpacity>
         </View>
         <View style={styles.headerCenter}>
-          <Image
-            source={require('../../assets/logo-wide.png')}
-            style={styles.headerBanner}
-            resizeMode="contain"
-          />
+          <Text style={styles.headerTitle}>オオギリ検定</Text>
         </View>
         {nickname && phase !== 'nickname' ? (
           <Text style={styles.headerNickname}>{nickname}</Text>
