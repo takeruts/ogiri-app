@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 
-  <!-- お笑い偏差値診断 (Kabeuchi Ogiri) - メインページ -->
+  <!-- オオギリ検定 (Kabeuchi Ogiri) - メインページ -->
   <url>
     <loc>https://www.ogirihub.com/</loc>
     <lastmod>2026-06-19</lastmod>
@@ -13,7 +13,7 @@
     <priority>1.0</priority>
     <image:image>
       <image:loc>https://www.ogirihub.com/og-image.png</image:loc>
-      <image:title>お笑い偏差値診断 - AIお笑いセンス診断</image:title>
+      <image:title>オオギリ検定 - AIお笑いセンス診断</image:title>
       <image:caption>AIがあなたのお笑いセンスを偏差値で診断</image:caption>
     </image:image>
   </url>

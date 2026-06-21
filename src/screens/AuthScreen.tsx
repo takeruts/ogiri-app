@@ -26,7 +26,7 @@ export const AuthScreen = () => {
         style={styles.homeButton}
         onPress={() => navigation.navigate('Game')}
       >
-        <Text style={styles.homeButtonText}>お笑い偏差値診断へ</Text>
+        <Text style={styles.homeButtonText}>オオギリ検定へ</Text>
       </TouchableOpacity>
     </View>
   );

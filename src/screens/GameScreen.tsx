@@ -67,6 +67,14 @@ export const GameScreen = ({ route, navigation }: any) => {
   const [savingImage, setSavingImage] = useState(false);
   const [diagMode, setDiagMode] = useState(false); // 総合診断モード（複数お題）
   const [diagResults, setDiagResults] = useState<DiagEntry[]>([]);
+  const [examStats, setExamStats] = useState<{
+    deviation: number;
+    rankName: string;
+    topPercent: number;
+    nationalRank: number | null;
+    totalUsers: number | null;
+    games: number;
+  } | null>(null);
   const startTimeRef = useRef<number | null>(null);
   const { user, loading: authLoading } = useAuth();
 
@@ -83,6 +91,48 @@ export const GameScreen = ({ route, navigation }: any) => {
     console.log('Auth loaded, checking nickname. user:', user?.id);
     checkExistingNickname();
   }, [user, authLoading]);
+
+  // スタート画面に戻るたびに段位（受験成績）を取得
+  useEffect(() => {
+    if (phase === 'start') fetchUserStats();
+  }, [phase, user]);
+
+  // ユーザーの段位・偏差値・全国順位を集計
+  const fetchUserStats = async () => {
+    if (!user) {
+      setExamStats(null);
+      return;
+    }
+    try {
+      const { data } = await supabase
+        .from('user_rankings')
+        .select('average_score, total_games')
+        .eq('user_id', user.id)
+        .limit(1);
+      const myRow = data && data[0];
+      if (!myRow) {
+        setExamStats(null);
+        return;
+      }
+      const avg = Number(myRow.average_score);
+      const deviation = getDeviation(avg);
+      const [{ count: above }, { count: total }] = await Promise.all([
+        supabase.from('user_rankings').select('user_id', { count: 'exact', head: true }).gt('average_score', avg),
+        supabase.from('user_rankings').select('user_id', { count: 'exact', head: true }),
+      ]);
+      setExamStats({
+        deviation,
+        rankName: getRank(deviation),
+        topPercent: getTopPercent(avg),
+        nationalRank: (above ?? 0) + 1,
+        totalUsers: total ?? null,
+        games: myRow.total_games,
+      });
+    } catch (e) {
+      console.error('段位の取得に失敗:', e);
+      setExamStats(null);
+    }
+  };
 
   const checkExistingNickname = async () => {
     setLoading(true);
@@ -479,11 +529,11 @@ export const GameScreen = ({ route, navigation }: any) => {
           { label: '共感力', value: dg.axes.empathy },
         ],
         analysis: getOverallTagline(dg.avgScore),
-        topic: `お笑い偏差値診断（全${dg.count}問）`,
+        topic: getRank(dg.deviation),
         answer: `「${dg.type}」`,
-        topicLabel: '総合診断',
+        topicLabel: 'オオギリ検定 認定段位',
         answerLabel: 'お笑いタイプ',
-        analysisTitle: 'RESULT',
+        analysisTitle: 'CERTIFICATE',
         analysisPrefix: '総合評価は',
       });
       if (blob) {
@@ -503,12 +553,13 @@ export const GameScreen = ({ route, navigation }: any) => {
   const handleShareDiagnosisX = () => {
     if (diagResults.length === 0) return;
     const dg = computeDiagnosis(diagResults);
-    const text = `🎤お笑い偏差値診断【総合結果】
+    const text = `📜オオギリ検定 認定証
+認定段位：${getRank(dg.deviation)}
 お笑い偏差値 ${dg.deviation}（全国上位${dg.topPercent}%）
 タイプ：${dg.type}
 ${getOverallComment(dg.avgScore)}
 
-#お笑い偏差値診断
+#オオギリ検定 #大喜利
 https://www.ogirihub.com/`;
     logEvent('share', { method: 'x_text', kind: 'diagnosis', score: dg.avgScore });
     Linking.openURL(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`);
@@ -549,7 +600,7 @@ https://www.ogirihub.com/`;
 お題：${currentTopic}
 回答：${answer}
 
-#お笑い偏差値診断 #大喜利
+#オオギリ検定 #大喜利
 https://www.ogirihub.com/`;
 
     const encodedText = encodeURIComponent(text);
@@ -628,6 +679,22 @@ https://www.ogirihub.com/`;
     return 88;
   };
 
+  // 偏差値 → 段位（オオギリ検定の認定段位）
+  const getRank = (deviation: number): string => {
+    if (deviation >= 74) return '名人';
+    if (deviation >= 71) return '五段';
+    if (deviation >= 68) return '四段';
+    if (deviation >= 65) return '三段';
+    if (deviation >= 62) return '二段';
+    if (deviation >= 59) return '初段';
+    if (deviation >= 56) return '一級';
+    if (deviation >= 53) return '二級';
+    if (deviation >= 50) return '三級';
+    if (deviation >= 45) return '四級';
+    if (deviation >= 40) return '五級';
+    return '級外';
+  };
+
   // 文字列ハッシュ（軸のばらつきを決定的に出す）
   const hashStr = (s: string) => {
     let h = 0;
@@ -680,7 +747,7 @@ https://www.ogirihub.com/`;
         style={styles.logo}
         resizeMode="contain"
       />
-      <Text style={styles.title}>お笑い偏差値診断</Text>
+      <Text style={styles.title}>オオギリ検定</Text>
       <Text style={styles.subtitle}>ニックネームを設定してください</Text>
       <Text style={styles.description}>
         {nicknameError || 'マイページからニックネームを設定すると\nゲームを開始できます'}
@@ -701,14 +768,43 @@ https://www.ogirihub.com/`;
         style={styles.logo}
         resizeMode="contain"
       />
-      <Text style={styles.title}>お笑い偏差値診断</Text>
-      <Text style={styles.heroCopy}>あなたの笑いの才能、{'\n'}AIが本気で診断。</Text>
-      <Text style={styles.heroSub}>3分でわかる、お笑い偏差値。</Text>
-      <Text style={styles.welcomeText}>ようこそ、{nickname}さん！</Text>
-      <Text style={styles.description}>
-        お題に回答 → AIが偏差値・タイプを診断{'\n'}
-        結果はSNSでシェアできる！
-      </Text>
+      <Text style={styles.title}>オオギリ検定</Text>
+
+      {examStats ? (
+        <View style={styles.rankCard}>
+          <Text style={styles.rankCardLabel}>あなたの認定段位</Text>
+          <Text style={styles.rankCardDan}>{examStats.rankName}</Text>
+          <View style={styles.rankCardRow}>
+            <View style={styles.rankCardStat}>
+              <Text style={styles.rankStatValue}>{examStats.deviation}</Text>
+              <Text style={styles.rankStatLabel}>偏差値</Text>
+            </View>
+            <View style={styles.rankCardDivider} />
+            <View style={styles.rankCardStat}>
+              <Text style={styles.rankStatValue}>
+                {examStats.nationalRank ? `${examStats.nationalRank}位` : `上位${examStats.topPercent}%`}
+              </Text>
+              <Text style={styles.rankStatLabel}>
+                {examStats.totalUsers ? `全国${examStats.totalUsers}人中` : '全国順位'}
+              </Text>
+            </View>
+            <View style={styles.rankCardDivider} />
+            <View style={styles.rankCardStat}>
+              <Text style={styles.rankStatValue}>{examStats.games}</Text>
+              <Text style={styles.rankStatLabel}>受験回数</Text>
+            </View>
+          </View>
+        </View>
+      ) : (
+        <>
+          <Text style={styles.heroCopy}>AIがあなたの発想力を測定し、{'\n'}段位と偏差値を認定。</Text>
+          <Text style={styles.heroSub}>受験 → 採点 → 認定 → 昇段</Text>
+          <Text style={styles.welcomeText}>ようこそ、{nickname}さん！</Text>
+          {user ? (
+            <Text style={styles.description}>受験するとあなたの段位が認定されます</Text>
+          ) : null}
+        </>
+      )}
 
       {!user ? (
         <TouchableOpacity
@@ -716,7 +812,7 @@ https://www.ogirihub.com/`;
           onPress={() => navigation.navigate('MyPage')}
         >
           <Text style={styles.loginPromptText}>
-            ログインすると履歴が残り、ランキングに参加できます
+            ログインすると段位が認定され、全国ランキングに参加できます
           </Text>
         </TouchableOpacity>
       ) : null}
@@ -737,7 +833,7 @@ https://www.ogirihub.com/`;
           {loading ? (
             <ActivityIndicator color={colors.textInverse} />
           ) : (
-            <Text style={styles.primaryButtonText}>このお題で診断</Text>
+            <Text style={styles.primaryButtonText}>このお題で受験</Text>
           )}
         </TouchableOpacity>
       ) : (
@@ -750,7 +846,7 @@ https://www.ogirihub.com/`;
             {loading ? (
               <ActivityIndicator color={colors.textInverse} />
             ) : (
-              <Text style={styles.primaryButtonText}>総合診断をはじめる（{DIAG_COUNT}問）</Text>
+              <Text style={styles.primaryButtonText}>📝 検定を受験する（{DIAG_COUNT}問）</Text>
             )}
           </TouchableOpacity>
 
@@ -1135,12 +1231,19 @@ https://www.ogirihub.com/`;
       { label: 'シュール力', value: dg.axes.surreal },
       { label: '共感力', value: dg.axes.empathy },
     ];
+    const rankName = getRank(dg.deviation);
     return (
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.diagResultHeader}>総合診断結果</Text>
-        <Text style={styles.diagResultSub}>全{dg.count}問のお笑いセンスを総合判定</Text>
+        <Text style={styles.diagResultHeader}>オオギリ検定 認定証</Text>
+        <Text style={styles.diagResultSub}>全{dg.count}問の受験結果を認定</Text>
 
-        <View style={styles.diagCard}>
+        <View style={styles.certCard}>
+          <Text style={styles.certBrand}>OOGIRI CERTIFICATE</Text>
+          <Text style={styles.certRankLabel}>認定段位</Text>
+          <Text style={styles.certRankDan}>{rankName}</Text>
+
+          <View style={styles.certDivider} />
+
           <Text style={styles.diagLabel}>総合お笑い偏差値</Text>
           <Text style={styles.diagDeviation}>{dg.deviation}</Text>
           <View style={styles.diagTopPill}>
@@ -1267,7 +1370,7 @@ https://www.ogirihub.com/`;
             style={styles.headerLogo}
             resizeMode="contain"
           />
-          <Text style={styles.headerTitle}>お笑い偏差値診断</Text>
+          <Text style={styles.headerTitle}>オオギリ検定</Text>
         </View>
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -1292,7 +1395,7 @@ https://www.ogirihub.com/`;
             style={styles.headerLogo}
             resizeMode="contain"
           />
-          <Text style={styles.headerTitle}>お笑い偏差値診断</Text>
+          <Text style={styles.headerTitle}>オオギリ検定</Text>
         </View>
         {nickname && phase !== 'nickname' ? (
           <Text style={styles.headerNickname}>{nickname}</Text>
@@ -2293,5 +2396,111 @@ const styles = StyleSheet.create({
   diagBreakAnswer: {
     ...typography.body,
     color: colors.text,
+  },
+
+  // 段位ダッシュボード（ホーム）
+  rankCard: {
+    width: '100%',
+    backgroundColor: diag.bgCard,
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: diag.gold,
+    padding: spacing.xl,
+    marginTop: spacing.md,
+    marginBottom: spacing.lg,
+    alignItems: 'center',
+    shadowColor: diag.gold,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  rankCardLabel: {
+    fontSize: 13,
+    color: diag.goldLight,
+    letterSpacing: 2,
+    fontWeight: '700',
+  },
+  rankCardDan: {
+    fontSize: 56,
+    fontWeight: '900',
+    color: diag.goldLight,
+    lineHeight: 64,
+    marginVertical: 4,
+    textShadowColor: diag.gold,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 18,
+  },
+  rankCardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.md,
+    width: '100%',
+    justifyContent: 'space-around',
+  },
+  rankCardStat: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  rankStatValue: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: diag.text,
+  },
+  rankStatLabel: {
+    fontSize: 11,
+    color: diag.textSub,
+    marginTop: 2,
+  },
+  rankCardDivider: {
+    width: 1,
+    height: 36,
+    backgroundColor: diag.glassBorder,
+  },
+
+  // 認定証カード
+  certCard: {
+    backgroundColor: diag.bgCard,
+    borderRadius: 24,
+    padding: spacing.xxl,
+    marginTop: spacing.lg,
+    marginBottom: spacing.lg,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: diag.gold,
+    shadowColor: diag.gold,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.45,
+    shadowRadius: 28,
+    elevation: 12,
+    overflow: 'hidden',
+  },
+  certBrand: {
+    fontSize: 13,
+    letterSpacing: 4,
+    fontWeight: '800',
+    color: diag.goldLight,
+    marginBottom: spacing.md,
+  },
+  certRankLabel: {
+    fontSize: 13,
+    color: diag.textSub,
+    letterSpacing: 2,
+  },
+  certRankDan: {
+    fontSize: 72,
+    fontWeight: '900',
+    color: diag.goldLight,
+    lineHeight: 80,
+    textShadowColor: diag.gold,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 22,
+  },
+  certDivider: {
+    width: '70%',
+    height: 1,
+    backgroundColor: diag.gold,
+    opacity: 0.4,
+    marginVertical: spacing.lg,
   },
 });

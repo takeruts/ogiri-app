@@ -1,4 +1,4 @@
-# robots.txt for お笑い偏差値診断 (Kabeuchi Ogiri)
+# robots.txt for オオギリ検定 (Kabeuchi Ogiri)
 # https://www.ogirihub.com/
 
 User-agent: *

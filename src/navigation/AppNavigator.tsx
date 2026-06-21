@@ -78,7 +78,7 @@ export const AppNavigator = () => {
   // Web用のドキュメントタイトルを設定
   useEffect(() => {
     if (Platform.OS === 'web') {
-      document.title = 'お笑い偏差値診断 - AIお笑いセンス診断';
+      document.title = 'オオギリ検定 - AIお笑いセンス診断';
     }
   }, []);
 
@@ -100,7 +100,7 @@ export const AppNavigator = () => {
             PhotoGame: '写真で一言',
           };
           const sub = route?.name ? titles[route.name] : '';
-          return sub ? `お笑い偏差値診断 - ${sub}` : 'お笑い偏差値診断';
+          return sub ? `オオギリ検定 - ${sub}` : 'オオギリ検定';
         },
       }}
       onReady={() => {

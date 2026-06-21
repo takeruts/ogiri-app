@@ -1,4 +1,4 @@
-// お笑い偏差値診断 ブランドロゴ／アイコン生成スクリプト
+// オオギリ検定 ブランドロゴ／アイコン生成スクリプト
 // SVG をその場で定義し、@resvg/resvg-js で各サイズの PNG にラスタライズする。
 // 世界観: ダーク × 紫→ピンクのネオン／ガラスモーフィズム。日本語は Meiryo で描画。
 const fs = require('fs');
@@ -74,7 +74,7 @@ function ogSVG() {
   <defs>${defs}</defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
   ${badgeGroup(86, 151, 0.32)}
-  <text x="455" y="232" font-family="${FONT}" font-weight="900" font-size="84" fill="${C.white}">お笑い偏差値診断</text>
+  <text x="455" y="232" font-family="${FONT}" font-weight="900" font-size="84" fill="${C.white}">オオギリ検定</text>
   <text x="457" y="330" font-family="${FONT}" font-weight="700" font-size="40" fill="${C.pink}">あなたの笑いの才能、AIが本気で診断。</text>
   <text x="457" y="408" font-family="${FONT}" font-weight="400" font-size="30" fill="${C.sub}">3分でわかる、お笑い偏差値。タイプ診断＆SNSシェア</text>
   <text x="457" y="466" font-family="${FONT}" font-weight="400" font-size="28" fill="${C.sub}">ログイン不要・無料で今すぐ診断</text>
@@ -87,7 +87,7 @@ function splashSVG() {
   <defs>${defs}</defs>
   <rect width="1242" height="1334" fill="${C.d2}"/>
   ${badgeGroup(341, 250, 0.547)}
-  <text x="621" y="980" font-family="${FONT}" font-weight="900" font-size="92" fill="${C.white}" text-anchor="middle" dominant-baseline="central">お笑い偏差値診断</text>
+  <text x="621" y="980" font-family="${FONT}" font-weight="900" font-size="92" fill="${C.white}" text-anchor="middle" dominant-baseline="central">オオギリ検定</text>
   <text x="621" y="1060" font-family="${FONT}" font-weight="400" font-size="38" fill="${C.sub}" text-anchor="middle" dominant-baseline="central">あなたの笑いの才能、AIが本気で診断。</text>
 </svg>`;
 }

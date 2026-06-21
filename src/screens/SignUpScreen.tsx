@@ -60,7 +60,7 @@ export const SignUpScreen = () => {
     return (
       <View style={styles.container}>
         <View style={styles.content}>
-          <Text style={styles.title}>お笑い偏差値診断</Text>
+          <Text style={styles.title}>オオギリ検定</Text>
           <View style={styles.successCard}>
             <Text style={styles.successIcon}>✉️</Text>
             <Text style={styles.successTitle}>確認メールを送信しました</Text>
@@ -84,7 +84,7 @@ export const SignUpScreen = () => {
       style={styles.container}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>お笑い偏差値診断</Text>
+        <Text style={styles.title}>オオギリ検定</Text>
         <Text style={styles.subtitle}>新規登録</Text>
 
         <TextInput

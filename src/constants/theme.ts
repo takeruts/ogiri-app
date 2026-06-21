@@ -1,4 +1,4 @@
-// お笑い偏差値診断 - モダンでポップで優しいテーマ
+// オオギリ検定 - モダンでポップで優しいテーマ
 
 export const colors = {
   // Primary - ネオンパープル
@@ -66,6 +66,10 @@ export const diag = {
   textSub: '#B9AEDB',
   star: '#FBBF24',
   starEmpty: 'rgba(255,255,255,0.18)',
+  // 検定（認定証・段位）用ゴールド
+  gold: '#F59E0B',
+  goldLight: '#FCD34D',
+  goldSoft: 'rgba(245,158,11,0.16)',
 };
 
 export const spacing = {

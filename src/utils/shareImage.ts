@@ -71,7 +71,7 @@ export async function generateResultImage(d: ShareImageData): Promise<Blob | nul
   // ブランド
   ctx.fillStyle = '#F472B6';
   ctx.font = `bold 44px ${FONT}`;
-  ctx.fillText('お笑い偏差値診断', cx, 130);
+  ctx.fillText('オオギリ検定', cx, 130);
 
   // お題カード
   const roundRect = (x: number, y: number, w: number, h: number, r: number) => {
@@ -180,7 +180,7 @@ export async function generateResultImage(d: ShareImageData): Promise<Blob | nul
   // フッター
   ctx.fillStyle = '#8B7FB0';
   ctx.font = `28px ${FONT}`;
-  ctx.fillText('#お笑い偏差値診断  ogirihub.com', cx, 1850);
+  ctx.fillText('#オオギリ検定  ogirihub.com', cx, 1850);
 
   return await new Promise((resolve) => canvas.toBlob((b) => resolve(b), 'image/png'));
 }
@@ -191,7 +191,7 @@ export async function shareOrDownloadImage(blob: Blob, filename: string): Promis
   try {
     const file = new File([blob], filename, { type: 'image/png' });
     if (nav.canShare && nav.canShare({ files: [file] })) {
-      await nav.share({ files: [file], title: 'お笑い偏差値診断', text: 'お笑い偏差値を診断したよ！ #お笑い偏差値診断' });
+      await nav.share({ files: [file], title: 'オオギリ検定', text: 'お笑い偏差値を診断したよ！ #オオギリ検定' });
       return 'shared';
     }
   } catch (e) {

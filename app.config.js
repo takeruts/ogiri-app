@@ -1,6 +1,6 @@
 module.exports = {
   expo: {
-    name: 'お笑い偏差値診断',
+    name: 'オオギリ検定',
     slug: 'ogiri-app',
     version: '1.0.0',
     description: 'AIがあなたのお笑いセンスを診断するウェブアプリ。4つの観点でAI採点、ヒントも貰える。',
@@ -38,8 +38,8 @@ module.exports = {
     web: {
       bundler: 'metro',
       output: 'single',
-      name: 'お笑い偏差値診断',
-      shortName: 'お笑い偏差値診断',
+      name: 'オオギリ検定',
+      shortName: 'オオギリ検定',
       description: 'AIがあなたのお笑いセンスを診断するウェブアプリ',
       lang: 'ja',
       scope: '/',
