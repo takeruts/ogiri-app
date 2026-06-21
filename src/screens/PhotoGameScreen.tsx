@@ -18,6 +18,7 @@ import { getRandomPhoto, UnsplashPhoto, getPhotoCredit } from '../services/unspl
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { getNicknameInfo } from '../services/nicknameService';
+import { getTimeBonus } from '../utils/scoring';
 
 type GamePhase = 'start' | 'loading' | 'answering' | 'scoring' | 'result';
 
@@ -112,6 +113,11 @@ export const PhotoGameScreen = ({ navigation }: any) => {
 
     try {
       const scoreResult = await scorePhotoAnswer(currentPhoto.url, answer);
+      // 回答時間をスコアに反映（スピードボーナス）
+      const bonus = getTimeBonus(time, 'photo');
+      scoreResult.baseScore = scoreResult.score;
+      scoreResult.timeBonus = bonus;
+      scoreResult.score = Math.max(0, Math.min(100, scoreResult.score + bonus));
       setResult(scoreResult);
       setPhase('result');
       await saveResult(currentPhoto, answer, scoreResult, time);
@@ -321,6 +327,9 @@ https://www.ogirihub.com/`;
           {answerTime !== null && (
             <Text style={styles.answerTimeText}>
               回答時間: {answerTime < 60 ? `${answerTime}秒` : `${Math.floor(answerTime / 60)}分${answerTime % 60}秒`}
+              {result.timeBonus !== undefined && result.baseScore !== undefined
+                ? `（AI ${result.baseScore}点 ＋スピード ${result.timeBonus >= 0 ? '+' : ''}${result.timeBonus}点）`
+                : ''}
             </Text>
           )}
 
@@ -421,18 +430,18 @@ const styles = StyleSheet.create({
   headerCenter: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
     flex: 1,
     justifyContent: 'center',
   },
   headerLogo: {
-    width: 32,
-    height: 32,
+    width: 26,
+    height: 26,
+    marginRight: spacing.sm,
   },
   headerTitle: {
-    ...typography.h3,
+    fontSize: 18,
+    fontWeight: '800',
     color: colors.secondary,
-    fontWeight: 'bold',
   },
   headerNickname: {
     ...typography.caption,

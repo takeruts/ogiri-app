@@ -1355,6 +1355,8 @@ export interface ScoreResult {
   type?: string; // お笑いタイプ名（診断）
   axes?: DiagAxes; // 4軸スコア（診断レーダー）
   analysis?: string; // Spotify Wrapped 風の一言分析
+  baseScore?: number; // 時間ボーナス適用前のAI素点
+  timeBonus?: number; // 回答時間によるスピードボーナス（加点/減点）
 }
 
 // 採点基準（UIでも表示するためexport）

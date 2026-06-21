@@ -19,6 +19,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { generateResultImage, shareOrDownloadImage } from '../utils/shareImage';
 import { logEvent } from '../utils/analytics';
+import { getTimeBonus } from '../utils/scoring';
 import {
   getNicknameInfo,
   registerNickname,
@@ -490,6 +491,11 @@ export const GameScreen = ({ route, navigation }: any) => {
 
     try {
       const scoreResult = await scoreAnswer(currentTopic, answer);
+      // 回答時間をスコアに反映（スピードボーナス）
+      const bonus = getTimeBonus(time, examCategory);
+      scoreResult.baseScore = scoreResult.score;
+      scoreResult.timeBonus = bonus;
+      scoreResult.score = Math.max(0, Math.min(100, scoreResult.score + bonus));
       logEvent('diagnose_complete', {
         score: scoreResult.score,
         deviation: getDeviation(scoreResult.score),
@@ -951,22 +957,22 @@ https://www.ogirihub.com/`;
               disabled={loading}
             >
               <Text style={styles.catEmoji}>📝</Text>
-              <Text style={styles.catTitle}>文章大喜利検定</Text>
+              <Text style={styles.catTitle}>大喜利検定</Text>
               <Text style={styles.catSub}>総合{DIAG_COUNT}問・段位認定</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.catCard} onPress={handleStartSpeed} disabled={loading}>
               <Text style={styles.catEmoji}>⚡</Text>
               <Text style={styles.catTitle}>瞬発力検定</Text>
-              <Text style={styles.catSub}>制限時間60秒・1問</Text>
+              <Text style={styles.catSub}>制限時間60秒・速さ重視</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.catCard} onPress={handleStartIdea} disabled={loading}>
-              <Text style={styles.catEmoji}>💡</Text>
-              <Text style={styles.catTitle}>発想力検定</Text>
-              <Text style={styles.catSub}>1問・じっくり</Text>
+              <Text style={styles.catEmoji}>✏️</Text>
+              <Text style={styles.catTitle}>普通の大喜利採点</Text>
+              <Text style={styles.catSub}>1問・じっくり採点</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.catCard} onPress={() => navigation.navigate('PhotoGame')}>
               <Text style={styles.catEmoji}>📷</Text>
-              <Text style={styles.catTitle}>写真で一言検定</Text>
+              <Text style={styles.catTitle}>写真で一言</Text>
               <Text style={styles.catSub}>画像にボケる</Text>
             </TouchableOpacity>
           </View>
@@ -1303,6 +1309,9 @@ https://www.ogirihub.com/`;
             {answerTime !== null && (
               <Text style={styles.diagTime}>
                 回答時間 {answerTime < 60 ? `${answerTime}秒` : `${Math.floor(answerTime / 60)}分${answerTime % 60}秒`}
+                {result.timeBonus !== undefined && result.baseScore !== undefined
+                  ? `　AI ${result.baseScore}点 ＋スピード ${result.timeBonus >= 0 ? '+' : ''}${result.timeBonus}点`
+                  : ''}
               </Text>
             )}
           </View>
@@ -1565,18 +1574,18 @@ const styles = StyleSheet.create({
   headerCenter: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
     flex: 1,
     justifyContent: 'center',
   },
   headerLogo: {
-    width: 32,
-    height: 32,
+    width: 26,
+    height: 26,
+    marginRight: spacing.sm,
   },
   headerTitle: {
-    ...typography.h3,
-    color: colors.primary,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '800',
+    color: colors.text,
   },
   headerNickname: {
     ...typography.caption,

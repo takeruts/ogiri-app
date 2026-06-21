@@ -62,7 +62,8 @@
       "Bash(node -e \"['src/screens/HistoryScreen.tsx','src/services/geminiService.ts'].forEach\\(f=>{require\\('@babel/core'\\).transformFileSync\\(f,{presets:['babel-preset-expo']}\\);console.log\\('OK',f\\)}\\)\")",
       "Bash(node -e \"require\\('@babel/core'\\).transformFileSync\\('src/screens/GameScreen.tsx',{presets:['babel-preset-expo']}\\);console.log\\('OK GameScreen'\\)\")",
       "Bash(node scripts/preview-home.js)",
-      "Bash(rm -f preview-home.png)"
+      "Bash(rm -f preview-home.png)",
+      "Bash(node -e \"['src/screens/GameScreen.tsx','src/screens/PhotoGameScreen.tsx','src/utils/scoring.ts','src/services/geminiService.ts'].forEach\\(f=>{require\\('@babel/core'\\).transformFileSync\\(f,{presets:['babel-preset-expo']}\\);console.log\\('OK',f\\)}\\)\")"
     ]
   }
 }
