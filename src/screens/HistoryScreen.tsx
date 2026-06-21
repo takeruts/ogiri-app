@@ -767,7 +767,7 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.text,
     lineHeight: 22,
-    backgroundColor: '#FFF9E6',
+    backgroundColor: 'rgba(245,158,11,0.12)',
     padding: spacing.sm,
     borderRadius: borderRadius.sm,
   },

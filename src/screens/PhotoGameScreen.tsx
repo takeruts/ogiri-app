@@ -619,7 +619,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   hintCard: {
-    backgroundColor: '#FFF9E6',
+    backgroundColor: 'rgba(245,158,11,0.12)',
     padding: spacing.lg,
     borderRadius: borderRadius.md,
     marginBottom: spacing.xxl,
@@ -628,7 +628,7 @@ const styles = StyleSheet.create({
   },
   hintLabel: {
     ...typography.caption,
-    color: '#B88A00',
+    color: '#FCD34D',
     fontWeight: 'bold',
     marginBottom: spacing.sm,
   },

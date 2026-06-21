@@ -1362,7 +1362,7 @@ export interface ScoreResult {
 // 採点基準（UIでも表示するためexport）
 export const SCORING_CRITERIA = {
   title: '採点基準',
-  description: 'AIは以下の観点で0〜100点で採点します',
+  description: 'AIが以下の4観点で0〜100点を採点。さらに回答の速さでスピードボーナス（瞬発力検定は特に大きい）が加算されます',
   criteria: [
     {
       name: '笑いのインパクト',
@@ -1389,6 +1389,7 @@ export const SCORING_CRITERIA = {
     '王道の回答より、少しズラした視点が高得点のコツ',
     '長い説明より、短く切れ味のある回答を',
     'お題のキーワードを活かしつつ、予想外の展開を',
+    '回答が速いほどスピードボーナスで加点（瞬発力検定は特に大きい）',
   ],
 };
 
