@@ -759,7 +759,7 @@ https://www.ogirihub.com/`;
             onPress={handleGenerateTopic}
             disabled={loading}
           >
-            <Text style={styles.singleModeButtonText}>1問だけ試す</Text>
+            <Text style={styles.singleModeButtonText}>大喜利に答えて採点</Text>
           </TouchableOpacity>
         </>
       )}
