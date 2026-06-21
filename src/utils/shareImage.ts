@@ -15,6 +15,11 @@ export interface ShareImageData {
   analysis: string;
   topic: string;
   answer: string;
+  // 総合診断など、ラベルを差し替えたい場合に指定（任意）
+  topicLabel?: string;
+  answerLabel?: string;
+  analysisTitle?: string;
+  analysisPrefix?: string;
 }
 
 const FONT = '"Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif';
@@ -89,14 +94,14 @@ export async function generateResultImage(d: ShareImageData): Promise<Blob | nul
 
   ctx.fillStyle = '#B9AEDB';
   ctx.font = `bold 28px ${FONT}`;
-  ctx.fillText('お題', cx, 240);
+  ctx.fillText(d.topicLabel || 'お題', cx, 240);
   ctx.fillStyle = '#F5F3FF';
   ctx.font = `bold 38px ${FONT}`;
   wrapLines(ctx, d.topic, W - 240, 2).forEach((l, i) => ctx.fillText(l, cx, 296 + i * 50));
 
   ctx.fillStyle = '#C4B5FD';
   ctx.font = `bold 26px ${FONT}`;
-  ctx.fillText('あなたの回答', cx, 392);
+  ctx.fillText(d.answerLabel || 'あなたの回答', cx, 392);
 
   // 回答（大きく）
   ctx.fillStyle = '#F5F3FF';
@@ -166,10 +171,11 @@ export async function generateResultImage(d: ShareImageData): Promise<Blob | nul
   ctx.fill();
   ctx.fillStyle = '#C4B5FD';
   ctx.font = `bold 26px ${FONT}`;
-  ctx.fillText('AI ANALYSIS', cx, 1640);
+  ctx.fillText(d.analysisTitle || 'AI ANALYSIS', cx, 1640);
   ctx.fillStyle = '#F5F3FF';
   ctx.font = `bold 50px ${FONT}`;
-  ctx.fillText(`あなたの回答は ${d.analysis}`, cx, 1710);
+  const prefix = d.analysisPrefix ?? 'あなたの回答は';
+  ctx.fillText(prefix ? `${prefix} ${d.analysis}` : d.analysis, cx, 1710);
 
   // フッター
   ctx.fillStyle = '#8B7FB0';

@@ -26,7 +26,16 @@ import {
   storeNickname,
 } from '../services/nicknameService';
 
-type GamePhase = 'nickname' | 'start' | 'generating' | 'answering' | 'scoring' | 'result';
+type GamePhase = 'nickname' | 'start' | 'generating' | 'answering' | 'scoring' | 'result' | 'diagnosisResult';
+
+// 総合診断で連続回答するお題数
+const DIAG_COUNT = 3;
+
+interface DiagEntry {
+  topic: string;
+  answer: string;
+  result: ScoreResult;
+}
 
 interface ChallengeTopic {
   topic: string;
@@ -56,6 +65,8 @@ export const GameScreen = ({ route, navigation }: any) => {
   const [topicScoreResult, setTopicScoreResult] = useState<TopicScoreResult | null>(null);
   const [topicScoring, setTopicScoring] = useState(false);
   const [savingImage, setSavingImage] = useState(false);
+  const [diagMode, setDiagMode] = useState(false); // 総合診断モード（複数お題）
+  const [diagResults, setDiagResults] = useState<DiagEntry[]>([]);
   const startTimeRef = useRef<number | null>(null);
   const { user, loading: authLoading } = useAuth();
 
@@ -370,22 +381,137 @@ export const GameScreen = ({ route, navigation }: any) => {
 
     try {
       const scoreResult = await scoreAnswer(currentTopic, answer);
-      setResult(scoreResult);
-      setPhase('result');
       logEvent('diagnose_complete', {
         score: scoreResult.score,
         deviation: getDeviation(scoreResult.score),
         top_percent: getTopPercent(scoreResult.score),
         diag_type: getDiagType(scoreResult, getAxes(scoreResult, answer)),
         genre: currentGenre || undefined,
+        mode: diagMode ? 'diagnosis' : 'single',
       });
       await saveResult(currentTopic, answer, scoreResult, time);
+      setResult(scoreResult);
+
+      if (diagMode) {
+        const newResults = [...diagResults, { topic: currentTopic, answer, result: scoreResult }];
+        setDiagResults(newResults);
+        if (newResults.length >= DIAG_COUNT) {
+          setPhase('diagnosisResult');
+          logEvent('diagnosis_finished', { count: newResults.length });
+        } else {
+          // 次のお題へ（診断継続）
+          await handleGenerateTopic();
+        }
+      } else {
+        setPhase('result');
+      }
     } catch (err) {
       setError('採点に失敗しました。もう一度お試しください。');
       setPhase('answering');
     } finally {
       setLoading(false);
     }
+  };
+
+  // 総合診断を開始（複数お題に連続回答）
+  const handleStartDiagnosis = async () => {
+    setDiagMode(true);
+    setDiagResults([]);
+    await handleGenerateTopic();
+  };
+
+  // 診断結果の集計
+  const computeDiagnosis = (entries: DiagEntry[]) => {
+    const n = entries.length || 1;
+    const avgScore = Math.round(entries.reduce((s, e) => s + e.result.score, 0) / n);
+    const axesList = entries.map((e) => getAxes(e.result, e.answer));
+    const avgAxis = (k: 'creativity' | 'sarcasm' | 'surreal' | 'empathy') =>
+      Math.max(1, Math.min(5, Math.round(axesList.reduce((s, a) => s + a[k], 0) / n)));
+    const axes = {
+      creativity: avgAxis('creativity'),
+      sarcasm: avgAxis('sarcasm'),
+      surreal: avgAxis('surreal'),
+      empathy: avgAxis('empathy'),
+    };
+    const type = getDiagType({ score: avgScore, comment: '', hint: '', axes } as ScoreResult, axes);
+    return {
+      count: entries.length,
+      avgScore,
+      axes,
+      deviation: getDeviation(avgScore),
+      topPercent: getTopPercent(avgScore),
+      type,
+    };
+  };
+
+  // 総合評価コメント
+  const getOverallComment = (score: number) => {
+    if (score >= 80) return 'もはやプロ級。あなたのボケは生まれ持った才能です。';
+    if (score >= 65) return 'かなりの実力派。大喜利の場を任せられるセンス。';
+    if (score >= 50) return '平均以上のお笑いセンス。あと一歩で爆笑ハンター。';
+    if (score >= 35) return '伸びしろの塊。ひらめきを磨けば一気に化けます。';
+    return 'これからが本番。場数を踏んでセンスを開花させよう。';
+  };
+
+  // 総合診断の短い称号（シェア画像用）
+  const getOverallTagline = (score: number) => {
+    if (score >= 80) return '天才クラス';
+    if (score >= 65) return '実力派';
+    if (score >= 50) return '平均以上';
+    if (score >= 35) return '伸びしろ大';
+    return 'これから型';
+  };
+
+  // 総合診断結果を画像で保存／シェア
+  const handleSaveDiagnosisImage = async () => {
+    if (savingImage || diagResults.length === 0) return;
+    setSavingImage(true);
+    try {
+      const dg = computeDiagnosis(diagResults);
+      const blob = await generateResultImage({
+        deviation: dg.deviation,
+        topPercent: dg.topPercent,
+        type: dg.type,
+        axes: [
+          { label: '創造力', value: dg.axes.creativity },
+          { label: '毒舌力', value: dg.axes.sarcasm },
+          { label: 'シュール力', value: dg.axes.surreal },
+          { label: '共感力', value: dg.axes.empathy },
+        ],
+        analysis: getOverallTagline(dg.avgScore),
+        topic: `お笑い偏差値診断（全${dg.count}問）`,
+        answer: `「${dg.type}」`,
+        topicLabel: '総合診断',
+        answerLabel: 'お笑いタイプ',
+        analysisTitle: 'RESULT',
+        analysisPrefix: '総合評価は',
+      });
+      if (blob) {
+        const outcome = await shareOrDownloadImage(blob, 'owarai-shindan.png');
+        logEvent('share', { method: 'image', kind: 'diagnosis', outcome, score: dg.avgScore });
+      } else {
+        setError('画像の保存はWeb版で利用できます');
+      }
+    } catch (e) {
+      console.error('診断画像生成エラー:', e);
+      setError('画像の生成に失敗しました');
+    } finally {
+      setSavingImage(false);
+    }
+  };
+
+  const handleShareDiagnosisX = () => {
+    if (diagResults.length === 0) return;
+    const dg = computeDiagnosis(diagResults);
+    const text = `🎤お笑い偏差値診断【総合結果】
+お笑い偏差値 ${dg.deviation}（全国上位${dg.topPercent}%）
+タイプ：${dg.type}
+${getOverallComment(dg.avgScore)}
+
+#お笑い偏差値診断
+https://www.ogirihub.com/`;
+    logEvent('share', { method: 'x_text', kind: 'diagnosis', score: dg.avgScore });
+    Linking.openURL(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`);
   };
 
   const handleRetry = () => {
@@ -406,6 +532,8 @@ export const GameScreen = ({ route, navigation }: any) => {
     setAnswer('');
     setResult(null);
     setError(null);
+    setDiagMode(false);
+    setDiagResults([]);
   };
 
   const handleShareToX = () => {
@@ -421,7 +549,7 @@ export const GameScreen = ({ route, navigation }: any) => {
 お題：${currentTopic}
 回答：${answer}
 
-#お笑い偏差値診断 #お笑い偏差値診断
+#お笑い偏差値診断 #大喜利
 https://www.ogirihub.com/`;
 
     const encodedText = encodeURIComponent(text);
@@ -600,19 +728,41 @@ https://www.ogirihub.com/`;
         </View>
       )}
 
-      <TouchableOpacity
-        style={styles.primaryButton}
-        onPress={handleGenerateTopic}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color={colors.textInverse} />
-        ) : (
-          <Text style={styles.primaryButtonText}>
-            {challengeTopic ? 'このお題で診断' : '診断をはじめる'}
-          </Text>
-        )}
-      </TouchableOpacity>
+      {challengeTopic ? (
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={handleGenerateTopic}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color={colors.textInverse} />
+          ) : (
+            <Text style={styles.primaryButtonText}>このお題で診断</Text>
+          )}
+        </TouchableOpacity>
+      ) : (
+        <>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={handleStartDiagnosis}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color={colors.textInverse} />
+            ) : (
+              <Text style={styles.primaryButtonText}>総合診断をはじめる（{DIAG_COUNT}問）</Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.singleModeButton}
+            onPress={handleGenerateTopic}
+            disabled={loading}
+          >
+            <Text style={styles.singleModeButtonText}>1問だけ試す</Text>
+          </TouchableOpacity>
+        </>
+      )}
 
       <TouchableOpacity
         style={styles.photoModeButton}
@@ -729,6 +879,21 @@ https://www.ogirihub.com/`;
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        {diagMode && (
+          <View style={styles.diagProgress}>
+            <Text style={styles.diagProgressText}>
+              総合診断 {diagResults.length + 1} / {DIAG_COUNT} 問目
+            </Text>
+            <View style={styles.diagProgressBar}>
+              <View
+                style={[
+                  styles.diagProgressFill,
+                  { width: `${(diagResults.length / DIAG_COUNT) * 100}%` },
+                ]}
+              />
+            </View>
+          </View>
+        )}
         <View style={styles.topicHeader}>
           <Text style={styles.phaseLabel}>お題</Text>
           <View style={styles.badgeRow}>
@@ -961,6 +1126,88 @@ https://www.ogirihub.com/`;
     </ScrollView>
   );
 
+  // 総合診断の結果画面
+  const renderDiagnosisResult = () => {
+    const dg = computeDiagnosis(diagResults);
+    const axisList = [
+      { label: '創造力', value: dg.axes.creativity },
+      { label: '毒舌力', value: dg.axes.sarcasm },
+      { label: 'シュール力', value: dg.axes.surreal },
+      { label: '共感力', value: dg.axes.empathy },
+    ];
+    return (
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.diagResultHeader}>総合診断結果</Text>
+        <Text style={styles.diagResultSub}>全{dg.count}問のお笑いセンスを総合判定</Text>
+
+        <View style={styles.diagCard}>
+          <Text style={styles.diagLabel}>総合お笑い偏差値</Text>
+          <Text style={styles.diagDeviation}>{dg.deviation}</Text>
+          <View style={styles.diagTopPill}>
+            <Text style={styles.diagTopPillText}>全国上位 {dg.topPercent}%</Text>
+          </View>
+
+          <Text style={styles.diagTypeLabel}>あなたのお笑いタイプは</Text>
+          <Text style={styles.diagType}>「{dg.type}」</Text>
+
+          <View style={styles.diagAxes}>
+            {axisList.map((a) => (
+              <View key={a.label} style={styles.axisRow}>
+                <Text style={styles.axisLabel}>{a.label}</Text>
+                <Text style={styles.axisStars}>
+                  <Text style={styles.axisStarOn}>{'★'.repeat(a.value)}</Text>
+                  <Text style={styles.axisStarOff}>{'☆'.repeat(5 - a.value)}</Text>
+                </Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.wrappedCard}>
+            <Text style={styles.wrappedLabel}>総合評価</Text>
+            <Text style={styles.wrappedText}>{getOverallComment(dg.avgScore)}</Text>
+          </View>
+        </View>
+
+        <Text style={styles.diagBreakdownTitle}>回答の内訳</Text>
+        {diagResults.map((e, i) => (
+          <View key={i} style={styles.diagBreakItem}>
+            <View style={styles.diagBreakHeader}>
+              <Text style={styles.diagBreakNum}>Q{i + 1}</Text>
+              <Text style={styles.diagBreakScore}>偏差値 {getDeviation(e.result.score)}</Text>
+            </View>
+            <Text style={styles.diagBreakTopic} numberOfLines={2}>{e.topic}</Text>
+            <Text style={styles.diagBreakAnswer} numberOfLines={2}>{e.answer}</Text>
+          </View>
+        ))}
+
+        <TouchableOpacity
+          style={styles.neonShareButton}
+          onPress={handleSaveDiagnosisImage}
+          disabled={savingImage}
+        >
+          {savingImage ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.neonShareButtonText}>📸 診断結果を画像で保存・シェア</Text>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.xShareButton} onPress={handleShareDiagnosisX}>
+          <Text style={styles.xShareButtonText}>𝕏 でテキスト投稿</Text>
+        </TouchableOpacity>
+
+        <View style={styles.buttonRow}>
+          <TouchableOpacity style={styles.secondaryButton} onPress={handleStartDiagnosis}>
+            <Text style={styles.secondaryButtonText}>もう一度診断</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.primaryButton} onPress={handleGoHome}>
+            <Text style={styles.primaryButtonText}>ホームに戻る</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    );
+  };
+
   // 採点基準モーダル
   const renderCriteriaModal = () => (
     <Modal
@@ -1070,6 +1317,7 @@ https://www.ogirihub.com/`;
         {phase === 'answering' && renderAnsweringScreen()}
         {phase === 'scoring' && renderScoringScreen()}
         {phase === 'result' && renderResultScreen()}
+        {phase === 'diagnosisResult' && renderDiagnosisResult()}
       </View>
 
       {renderCriteriaModal()}
@@ -1955,5 +2203,95 @@ const styles = StyleSheet.create({
     color: diag.text,
     fontWeight: '700',
     fontSize: 15,
+  },
+
+  // 総合診断モード
+  singleModeButton: {
+    marginTop: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xl,
+    borderRadius: borderRadius.round,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: diag.glass,
+  },
+  singleModeButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  diagProgress: {
+    marginBottom: spacing.lg,
+  },
+  diagProgressText: {
+    ...typography.bodySmall,
+    color: diag.purpleSoft,
+    fontWeight: '800',
+    marginBottom: spacing.xs,
+  },
+  diagProgressBar: {
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: diag.glass,
+    overflow: 'hidden',
+  },
+  diagProgressFill: {
+    height: '100%',
+    borderRadius: 999,
+    backgroundColor: diag.pink,
+  },
+  diagResultHeader: {
+    fontSize: 26,
+    fontWeight: '900',
+    color: colors.text,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+  },
+  diagResultSub: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  diagBreakdownTitle: {
+    ...typography.h3,
+    color: colors.text,
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  diagBreakItem: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    padding: spacing.lg,
+    marginBottom: spacing.sm,
+  },
+  diagBreakHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
+  diagBreakNum: {
+    fontWeight: '900',
+    color: diag.pinkLight,
+    fontSize: 15,
+  },
+  diagBreakScore: {
+    fontWeight: '700',
+    color: colors.textSecondary,
+    fontSize: 13,
+  },
+  diagBreakTopic: {
+    ...typography.bodySmall,
+    color: colors.primary,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  diagBreakAnswer: {
+    ...typography.body,
+    color: colors.text,
   },
 });
