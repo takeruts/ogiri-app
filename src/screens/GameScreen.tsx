@@ -77,12 +77,10 @@ export const GameScreen = ({ route, navigation }: any) => {
     totalUsers: number | null;
     games: number;
   } | null>(null);
-  const [examCategory, setExamCategory] = useState<'text' | 'speed' | 'idea'>('text');
+  const [examCategory, setExamCategory] = useState<'text' | 'idea'>('text');
   const [dailyTopic, setDailyTopic] = useState<TopicResult | null>(null);
   const [dailyCount, setDailyCount] = useState<number | null>(null);
-  const [speedLeft, setSpeedLeft] = useState<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
-  const submitRef = useRef<() => void>(() => {});
   const { user, loading: authLoading } = useAuth();
 
   // ルートパラメータからお題を取得（ランキングや人気お題から挑戦する場合）
@@ -106,39 +104,6 @@ export const GameScreen = ({ route, navigation }: any) => {
       fetchDaily();
     }
   }, [phase, user]);
-
-  // 最新の回答送信ハンドラを参照に保持（タイマーから安全に呼ぶため）
-  useEffect(() => {
-    submitRef.current = () => {
-      if (answer.trim()) {
-        handleSubmitAnswer();
-      } else {
-        setError('時間切れ！次はスピード勝負で');
-        handleGoHome();
-      }
-    };
-  });
-
-  // 瞬発力検定の制限時間（回答中のみカウントダウン）
-  useEffect(() => {
-    if (phase === 'answering' && examCategory === 'speed') {
-      setSpeedLeft(60);
-      const id = setInterval(() => {
-        setSpeedLeft((s) => {
-          if (s === null) return s;
-          if (s <= 1) {
-            clearInterval(id);
-            submitRef.current();
-            return 0;
-          }
-          return s - 1;
-        });
-      }, 1000);
-      return () => clearInterval(id);
-    }
-    setSpeedLeft(null);
-    return undefined;
-  }, [phase, examCategory]);
 
   // 今日の検定（日替わりお題＋本日の受験者数）
   const fetchDaily = async () => {
@@ -165,29 +130,48 @@ export const GameScreen = ({ route, navigation }: any) => {
       return;
     }
     try {
-      const { data } = await supabase
+      // 段位・偏差値は「直近10回」の成績で算出（点数が悪くなれば段位も下がる）
+      const { data: recent } = await supabase
+        .from('game_history')
+        .select('score')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      if (!recent || recent.length === 0) {
+        setExamStats(null);
+        return;
+      }
+      const recentAvg = recent.reduce((s, r) => s + Number(r.score), 0) / recent.length;
+      const deviation = getDeviation(recentAvg);
+
+      // 全国順位・総受験回数は全期間（user_rankings）から
+      let nationalRank: number | null = null;
+      let totalUsers: number | null = null;
+      let games = recent.length;
+      const { data: rankRows } = await supabase
         .from('user_rankings')
         .select('average_score, total_games')
         .eq('user_id', user.id)
         .limit(1);
-      const myRow = data && data[0];
-      if (!myRow) {
-        setExamStats(null);
-        return;
+      const myRank = rankRows && rankRows[0];
+      if (myRank) {
+        games = myRank.total_games;
+        const allAvg = Number(myRank.average_score);
+        const [{ count: above }, { count: total }] = await Promise.all([
+          supabase.from('user_rankings').select('user_id', { count: 'exact', head: true }).gt('average_score', allAvg),
+          supabase.from('user_rankings').select('user_id', { count: 'exact', head: true }),
+        ]);
+        nationalRank = (above ?? 0) + 1;
+        totalUsers = total ?? null;
       }
-      const avg = Number(myRow.average_score);
-      const deviation = getDeviation(avg);
-      const [{ count: above }, { count: total }] = await Promise.all([
-        supabase.from('user_rankings').select('user_id', { count: 'exact', head: true }).gt('average_score', avg),
-        supabase.from('user_rankings').select('user_id', { count: 'exact', head: true }),
-      ]);
+
       setExamStats({
         deviation,
         rankName: getRank(deviation),
-        topPercent: getTopPercent(avg),
-        nationalRank: (above ?? 0) + 1,
-        totalUsers: total ?? null,
-        games: myRow.total_games,
+        topPercent: getTopPercent(recentAvg),
+        nationalRank,
+        totalUsers,
+        games,
       });
     } catch (e) {
       console.error('段位の取得に失敗:', e);
@@ -537,14 +521,7 @@ export const GameScreen = ({ route, navigation }: any) => {
     await handleGenerateTopic();
   };
 
-  // 瞬発力検定（1問・制限時間つき）
-  const handleStartSpeed = async () => {
-    setExamCategory('speed');
-    setDiagMode(false);
-    await handleGenerateTopic();
-  };
-
-  // 発想力検定（1問・じっくり）
+  // 普通の大喜利採点（1問・じっくり）
   const handleStartIdea = async () => {
     setExamCategory('idea');
     setDiagMode(false);
@@ -685,7 +662,6 @@ https://www.ogirihub.com/`;
     setDiagMode(false);
     setDiagResults([]);
     setExamCategory('text');
-    setSpeedLeft(null);
   };
 
   const handleShareToX = () => {
@@ -951,11 +927,6 @@ https://www.ogirihub.com/`;
               <Text style={styles.catTitle}>大喜利検定</Text>
               <Text style={styles.catSub}>総合{DIAG_COUNT}問・段位認定</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.catCard} onPress={handleStartSpeed} disabled={loading}>
-              <Text style={styles.catEmoji}>⚡</Text>
-              <Text style={styles.catTitle}>瞬発力検定</Text>
-              <Text style={styles.catSub}>制限時間60秒・速さ重視</Text>
-            </TouchableOpacity>
             <TouchableOpacity style={styles.catCard} onPress={handleStartIdea} disabled={loading}>
               <Text style={styles.catEmoji}>✏️</Text>
               <Text style={styles.catTitle}>普通の大喜利採点</Text>
@@ -1078,14 +1049,6 @@ https://www.ogirihub.com/`;
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {examCategory === 'speed' && speedLeft !== null && (
-          <View style={[styles.speedTimer, speedLeft <= 10 && styles.speedTimerWarn]}>
-            <Text style={styles.speedTimerLabel}>⚡ 瞬発力検定・制限時間</Text>
-            <Text style={[styles.speedTimerValue, speedLeft <= 10 && styles.speedTimerValueWarn]}>
-              {speedLeft}秒
-            </Text>
-          </View>
-        )}
         {diagMode && (
           <View style={styles.diagProgress}>
             <Text style={styles.diagProgressText}>
