@@ -862,7 +862,7 @@ https://www.ogirihub.com/`;
   );
 
   const renderStartScreen = () => (
-    <View style={styles.centerContent}>
+    <ScrollView contentContainerStyle={styles.startContent}>
       <Image
         source={require('../../assets/logo.png')}
         style={styles.logo}
@@ -985,7 +985,7 @@ https://www.ogirihub.com/`;
       >
         <Text style={styles.submitTopicButtonText}>✏️ お題を投稿する</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 
   // お題投稿モーダル
@@ -1513,11 +1513,6 @@ https://www.ogirihub.com/`;
           <Text style={styles.criteriaButtonText}>採点基準</Text>
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Image
-            source={require('../../assets/logo.png')}
-            style={styles.headerLogo}
-            resizeMode="contain"
-          />
           <Text style={styles.headerTitle}>オオギリ検定</Text>
         </View>
         {nickname && phase !== 'nickname' ? (
@@ -1600,6 +1595,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.xxl,
+  },
+  startContent: {
+    flexGrow: 1,
+    alignItems: 'center',
+    padding: spacing.xxl,
+    paddingBottom: spacing.xxl * 2,
   },
   scrollContent: {
     padding: spacing.xl,

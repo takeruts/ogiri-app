@@ -374,11 +374,6 @@ https://www.ogirihub.com/`;
           <Text style={styles.backHeaderButtonText}>← 戻る</Text>
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Image
-            source={require('../../assets/logo.png')}
-            style={styles.headerLogo}
-            resizeMode="contain"
-          />
           <Text style={styles.headerTitle}>写真で一言</Text>
         </View>
         {nickname ? (
