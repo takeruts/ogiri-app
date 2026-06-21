@@ -1507,7 +1507,11 @@ https://www.ogirihub.com/`;
     return (
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>オオギリ検定</Text>
+          <Image
+            source={require('../../assets/logo-wide.png')}
+            style={styles.headerBanner}
+            resizeMode="contain"
+          />
         </View>
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -1535,7 +1539,11 @@ https://www.ogirihub.com/`;
           </TouchableOpacity>
         </View>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>オオギリ検定</Text>
+          <Image
+            source={require('../../assets/logo-wide.png')}
+            style={styles.headerBanner}
+            resizeMode="contain"
+          />
         </View>
         {nickname && phase !== 'nickname' ? (
           <Text style={styles.headerNickname}>{nickname}</Text>
