@@ -61,6 +61,7 @@ export const GameScreen = ({ route, navigation }: any) => {
   const [guestName, setGuestName] = useState<string>(''); // 未ログイン時のランキング表示名
   const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [showCriteriaModal, setShowCriteriaModal] = useState(false);
+  const [showTipsModal, setShowTipsModal] = useState(false);
   const [showTopicSubmitModal, setShowTopicSubmitModal] = useState(false);
   const [userTopicInput, setUserTopicInput] = useState('');
   const [topicScoreResult, setTopicScoreResult] = useState<TopicScoreResult | null>(null);
@@ -1472,8 +1473,36 @@ https://www.ogirihub.com/`;
             ))}
           </View>
 
+        </View>
+      </TouchableOpacity>
+    </Modal>
+  );
+
+  // 高得点のコツモーダル
+  const renderTipsModal = () => (
+    <Modal
+      visible={showTipsModal}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setShowTipsModal(false)}
+    >
+      <TouchableOpacity
+        style={styles.modalOverlay}
+        activeOpacity={1}
+        onPress={() => setShowTipsModal(false)}
+      >
+        <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>💡 高得点のコツ</Text>
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowTipsModal(false)}
+            >
+              <Text style={styles.modalCloseText}>×</Text>
+            </TouchableOpacity>
+          </View>
+
           <View style={styles.tipsSection}>
-            <Text style={styles.tipsTitle}>高得点のコツ</Text>
             {SCORING_CRITERIA.tips.map((tip, index) => (
               <Text key={index} style={styles.tipItem}>• {tip}</Text>
             ))}
@@ -1506,12 +1535,20 @@ https://www.ogirihub.com/`;
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.criteriaButton}
-          onPress={() => setShowCriteriaModal(true)}
-        >
-          <Text style={styles.criteriaButtonText}>採点基準</Text>
-        </TouchableOpacity>
+        <View style={styles.headerLeft}>
+          <TouchableOpacity
+            style={styles.criteriaButton}
+            onPress={() => setShowCriteriaModal(true)}
+          >
+            <Text style={styles.criteriaButtonText}>採点基準</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.criteriaButton}
+            onPress={() => setShowTipsModal(true)}
+          >
+            <Text style={styles.criteriaButtonText}>💡コツ</Text>
+          </TouchableOpacity>
+        </View>
         <View style={styles.headerCenter}>
           <Text style={styles.headerTitle}>オオギリ検定</Text>
         </View>
@@ -1542,6 +1579,7 @@ https://www.ogirihub.com/`;
       </View>
 
       {renderCriteriaModal()}
+      {renderTipsModal()}
       {renderTopicSubmitModal()}
     </View>
   );
@@ -1986,6 +2024,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
   criteriaButton: {
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.sm,
@@ -1993,7 +2036,6 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.sm,
     borderWidth: 1,
     borderColor: colors.border,
-    minWidth: 60,
   },
   criteriaButtonText: {
     ...typography.caption,
