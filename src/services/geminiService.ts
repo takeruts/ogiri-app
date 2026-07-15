@@ -1,15 +1,6 @@
-// Expo環境変数の取得
-const getApiKey = (): string => {
-  // @ts-ignore - Expo環境変数
-  const key = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-  if (!key) {
-    console.error('EXPO_PUBLIC_GEMINI_API_KEY is not set');
-    throw new Error('API key not configured');
-  }
-  return key;
-};
-
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent';
+// Gemini はサーバー側プロキシ（/api/gemini）経由で呼ぶ。
+// APIキーはサーバー専用の環境変数（GEMINI_API_KEY）に置き、クライアントには一切露出しない。
+const GEMINI_PROXY_URL = '/api/gemini';
 
 interface GeminiResponse {
   candidates: {
@@ -1245,10 +1236,9 @@ comment: この点数になった理由（良い点や改善点を含めて30-50
 suggestedGenre: 上記ジャンルから1つ選択`;
 
   try {
-    const apiKey = getApiKey();
     console.log('Calling Gemini API for topic scoring...');
 
-    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+    const response = await fetch(GEMINI_PROXY_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1409,11 +1399,10 @@ export const scorePhotoAnswer = async (imageUrl: string, answer: string): Promis
 {"score":数字0-100,"comment":"面白い点や足りない点を30字以内","hint":"この写真でウケるコツを50字以内"}`;
 
   try {
-    const apiKey = getApiKey();
     console.log('Calling Gemini API for photo scoring...');
 
     // 画像をBase64に変換するか、URLを直接使用
-    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+    const response = await fetch(GEMINI_PROXY_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1522,10 +1511,9 @@ JSON形式（説明文なし）:
 {"score":数字0-100,"comment":"面白い点や足りない点を30字以内","hint":"お題の狙いと高得点のコツを50字以内","type":"回答のお笑いセンスを表すタイプ名を10字以内で命名（例:天才ひらめき型/毒舌キレ型/シュール型/共感型/ど真ん中型）","axes":{"creativity":1〜5の整数,"sarcasm":1〜5の整数,"surreal":1〜5の整数,"empathy":1〜5の整数},"analysis":"回答の個性をSpotify Wrapped風に1文・20字以内で（例:予測不能度MAX）"}`;
 
   try {
-    const apiKey = getApiKey();
     console.log('Calling Gemini API for scoring...');
 
-    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+    const response = await fetch(GEMINI_PROXY_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
