@@ -775,10 +775,10 @@ https://www.ogirihub.com/`;
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return '#FFD700';
-    if (score >= 60) return '#4CAF50';
-    if (score >= 40) return '#2196F3';
-    return '#FF5722';
+    if (score >= 80) return '#C9A971';
+    if (score >= 60) return '#7FA087';
+    if (score >= 40) return '#7B93B0';
+    return '#C57B6E';
   };
 
   const getScoreEmoji = (score: number) => {
@@ -866,7 +866,7 @@ https://www.ogirihub.com/`;
   const getJudge = (score: number) => {
     if (score >= 70) return { name: 'ラナ', tag: '天才系AI', color: diag.purple };
     if (score >= 45) return { name: 'モモ', tag: '共感系AI', color: diag.pink };
-    return { name: 'ミュー', tag: '毒舌系AI', color: '#F59E0B' };
+    return { name: 'ミュー', tag: '毒舌系AI', color: '#B8945F' };
   };
 
   // ニックネーム設定画面（ログインユーザーでニックネーム未設定の場合のみ）
@@ -1901,16 +1901,16 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   hintCard: {
-    backgroundColor: 'rgba(245,158,11,0.12)',
+    backgroundColor: 'rgba(184,148,95,0.12)',
     padding: spacing.lg,
     borderRadius: borderRadius.md,
     marginBottom: spacing.xxl,
     borderLeftWidth: 4,
-    borderLeftColor: '#FFB800',
+    borderLeftColor: '#B8945F',
   },
   hintLabel: {
     ...typography.caption,
-    color: '#B45309',
+    color: '#8C6B3A',
     fontWeight: 'bold',
     marginBottom: spacing.sm,
   },
@@ -2146,16 +2146,16 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   tipsSection: {
-    backgroundColor: 'rgba(245,158,11,0.12)',
+    backgroundColor: 'rgba(184,148,95,0.12)',
     padding: spacing.md,
     borderRadius: borderRadius.md,
     borderLeftWidth: 4,
-    borderLeftColor: '#FFB800',
+    borderLeftColor: '#B8945F',
   },
   tipsTitle: {
     ...typography.bodySmall,
     fontWeight: 'bold',
-    color: '#B45309',
+    color: '#8C6B3A',
     marginBottom: spacing.sm,
   },
   tipItem: {
@@ -2343,7 +2343,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 24,
   },
   diagTopPill: {
-    backgroundColor: 'rgba(168,85,247,0.18)',
+    backgroundColor: 'rgba(156,146,168,0.20)',
     borderColor: diag.purple,
     borderWidth: 1,
     borderRadius: 999,
@@ -2457,14 +2457,14 @@ const styles = StyleSheet.create({
   diagHint: {
     width: '100%',
     marginTop: spacing.lg,
-    backgroundColor: 'rgba(251,191,36,0.10)',
+    backgroundColor: 'rgba(184,148,95,0.12)',
     borderRadius: 14,
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: 'rgba(251,191,36,0.25)',
+    borderColor: 'rgba(184,148,95,0.30)',
   },
   diagHintText: {
-    color: '#92400E',
+    color: '#8C6B3A',
     fontSize: 14,
     lineHeight: 21,
   },

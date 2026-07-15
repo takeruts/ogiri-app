@@ -127,10 +127,10 @@ export const MyPageScreen = ({ navigation }: any) => {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return '#FFD700';
-    if (score >= 60) return '#4CAF50';
-    if (score >= 40) return '#2196F3';
-    return '#FF5722';
+    if (score >= 80) return '#C9A971';
+    if (score >= 60) return '#7FA087';
+    if (score >= 40) return '#7B93B0';
+    return '#C57B6E';
   };
 
   const renderHistoryItem = ({ item }: { item: HistoryItem }) => (
@@ -214,7 +214,7 @@ export const MyPageScreen = ({ navigation }: any) => {
               <Text style={styles.statLabel}>平均点</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: '#FFD700' }]}>{stats.bestScore}</Text>
+              <Text style={[styles.statNumber, { color: '#C9A971' }]}>{stats.bestScore}</Text>
               <Text style={styles.statLabel}>最高点</Text>
             </View>
           </View>

@@ -167,10 +167,10 @@ https://www.ogirihub.com/`;
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return '#FFD700';
-    if (score >= 60) return '#4CAF50';
-    if (score >= 40) return '#2196F3';
-    return '#FF5722';
+    if (score >= 80) return '#C9A971';
+    if (score >= 60) return '#7FA087';
+    if (score >= 40) return '#7B93B0';
+    return '#C57B6E';
   };
 
   const getScoreEmoji = (score: number) => {
@@ -619,16 +619,16 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   hintCard: {
-    backgroundColor: 'rgba(245,158,11,0.12)',
+    backgroundColor: 'rgba(184,148,95,0.12)',
     padding: spacing.lg,
     borderRadius: borderRadius.md,
     marginBottom: spacing.xxl,
     borderLeftWidth: 4,
-    borderLeftColor: '#FFB800',
+    borderLeftColor: '#B8945F',
   },
   hintLabel: {
     ...typography.caption,
-    color: '#B45309',
+    color: '#8C6B3A',
     fontWeight: 'bold',
     marginBottom: spacing.sm,
   },

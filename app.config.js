@@ -10,7 +10,7 @@ module.exports = {
     splash: {
       image: './assets/splash.png',
       resizeMode: 'contain',
-      backgroundColor: '#FBCFE8',
+      backgroundColor: '#E9D6D0',
     },
     assetBundlePatterns: ['**/*'],
     ios: {
@@ -26,7 +26,7 @@ module.exports = {
     android: {
       adaptiveIcon: {
         foregroundImage: './assets/adaptive-icon.png',
-        backgroundColor: '#FBCFE8',
+        backgroundColor: '#E9D6D0',
       },
       package: 'com.ogiriapp.mobile',
       permissions: [
@@ -43,8 +43,8 @@ module.exports = {
       description: 'AIがあなたのお笑いセンスを診断するウェブアプリ',
       lang: 'ja',
       scope: '/',
-      themeColor: '#EC4899',
-      backgroundColor: '#FFF6F9',
+      themeColor: '#B0798B',
+      backgroundColor: '#F6F1EE',
       display: 'standalone',
       orientation: 'portrait',
     },

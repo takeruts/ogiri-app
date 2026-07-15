@@ -137,10 +137,10 @@ export const HistoryScreen = ({ navigation }: any) => {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return '#FFD700';
-    if (score >= 60) return '#4CAF50';
-    if (score >= 40) return '#2196F3';
-    return '#FF5722';
+    if (score >= 80) return '#C9A971';
+    if (score >= 60) return '#7FA087';
+    if (score >= 40) return '#7B93B0';
+    return '#C57B6E';
   };
 
   const formatTime = (seconds: number | null) => {
@@ -170,9 +170,9 @@ export const HistoryScreen = ({ navigation }: any) => {
 
   // 順位 → 称号（検定の格付け）
   const getRankTitle = (rank: number) => {
-    if (rank === 1) return { label: '名人', color: '#B45309' };
-    if (rank <= 3) return { label: '師範', color: '#D97706' };
-    if (rank <= 10) return { label: '達人', color: '#E11D48' };
+    if (rank === 1) return { label: '名人', color: '#8C6B3A' };
+    if (rank <= 3) return { label: '師範', color: '#B8945F' };
+    if (rank <= 10) return { label: '達人', color: '#C57B6E' };
     if (rank <= 30) return { label: '精鋭', color: colors.primary };
     return { label: '挑戦者', color: colors.textSecondary };
   };
@@ -232,7 +232,7 @@ export const HistoryScreen = ({ navigation }: any) => {
         </View>
         <View style={styles.popularStatItem}>
           <Text style={styles.popularStatLabel}>最高点</Text>
-          <Text style={[styles.popularStatValue, { color: '#FFD700' }]}>
+          <Text style={[styles.popularStatValue, { color: '#C9A971' }]}>
             {item.best_score}
           </Text>
         </View>
@@ -383,7 +383,7 @@ export const HistoryScreen = ({ navigation }: any) => {
                   <Text style={styles.statLabel}>平均点</Text>
                 </View>
                 <View style={styles.statItem}>
-                  <Text style={[styles.statNumber, { color: '#FFD700' }]}>
+                  <Text style={[styles.statNumber, { color: '#C9A971' }]}>
                     {stats.bestScore}
                   </Text>
                   <Text style={styles.statLabel}>最高点</Text>
@@ -767,7 +767,7 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.text,
     lineHeight: 22,
-    backgroundColor: 'rgba(245,158,11,0.12)',
+    backgroundColor: 'rgba(184,148,95,0.12)',
     padding: spacing.sm,
     borderRadius: borderRadius.sm,
   },

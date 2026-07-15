@@ -1,76 +1,76 @@
 // オオギリ検定 - モダンでポップで優しいテーマ
 
 export const colors = {
-  // Primary - ローズピンク（受験ボタン等）
-  primary: '#EC4899',
-  primaryLight: '#F472B6',
-  primaryDark: '#DB2777',
-  primarySoft: 'rgba(236,72,153,0.12)',
+  // Primary - くすみローズ／モーヴ（受験ボタン等）
+  primary: '#B0798B',
+  primaryLight: '#C79AA8',
+  primaryDark: '#8F6274',
+  primarySoft: 'rgba(176,121,139,0.12)',
 
-  // Secondary - ラベンダー
-  secondary: '#A78BFA',
-  secondaryLight: '#C4B5FD',
-  secondaryDark: '#8B5CF6',
-  secondarySoft: 'rgba(167,139,250,0.14)',
+  // Secondary - くすみラベンダー
+  secondary: '#9C92A8',
+  secondaryLight: '#B6ADC0',
+  secondaryDark: '#7C7189',
+  secondarySoft: 'rgba(156,146,168,0.14)',
 
-  // Accent - ゴールド（段位・認定証・ハイライト）
-  accent: '#E0A400',
-  accentLight: '#F59E0B',
-  accentDark: '#B45309',
-  accentSoft: 'rgba(224,164,0,0.14)',
+  // Accent - くすみゴールド（段位・認定証・ハイライト）
+  accent: '#B8945F',
+  accentLight: '#C9A971',
+  accentDark: '#8C6B3A',
+  accentSoft: 'rgba(184,148,95,0.16)',
 
-  // Success - ミントグリーン
-  success: '#10B981',
-  successLight: '#34D399',
-  successDark: '#059669',
-  successSoft: 'rgba(16,185,129,0.14)',
+  // Success - くすみセージ
+  success: '#7FA087',
+  successLight: '#9DBBA3',
+  successDark: '#5F8069',
+  successSoft: 'rgba(127,160,135,0.16)',
 
-  // Warning - アンバー
-  warning: '#D97706',
-  warningSoft: 'rgba(217,119,6,0.14)',
+  // Warning - くすみマスタード
+  warning: '#C99A5B',
+  warningSoft: 'rgba(201,154,91,0.16)',
 
-  // Error - ローズ
-  error: '#F43F5E',
-  errorSoft: 'rgba(244,63,94,0.12)',
+  // Error - くすみテラコッタ
+  error: '#C57B6E',
+  errorSoft: 'rgba(197,123,110,0.14)',
 
-  // Neutral - ライト（やわらかい女性向け）
-  background: '#FFF6F9',
+  // Neutral - ライト×グレージュ（今どきのニュアンス）
+  background: '#F6F1EE',
   surface: '#FFFFFF',
-  surfaceHover: '#FCEEF4',
-  border: 'rgba(61,43,54,0.10)',
-  borderLight: 'rgba(61,43,54,0.05)',
+  surfaceHover: '#F1E7E3',
+  border: 'rgba(74,64,63,0.10)',
+  borderLight: 'rgba(74,64,63,0.05)',
 
   // Text colors
-  text: '#3D2B36',
-  textSecondary: '#8A6E7C',
-  textLight: '#B7A2AD',
+  text: '#47403E',
+  textSecondary: '#8A7E79',
+  textLight: '#B4A9A3',
   textInverse: '#FFFFFF',
 
   // Special
-  overlay: 'rgba(61,43,54,0.40)',
-  shadow: 'rgba(236,72,153,0.18)',
+  overlay: 'rgba(47,40,39,0.40)',
+  shadow: 'rgba(176,121,139,0.16)',
 };
 
 // 診断・段位・認定証まわりのデザイントークン
 // ライト × ピンク／ラベンダー／上品なゴールドのやわらかい世界観
 export const diag = {
-  bg: '#FFF6F9',
+  bg: '#F6F1EE',
   bgCard: '#FFFFFF',
-  glass: 'rgba(236,72,153,0.06)',
-  glassBorder: 'rgba(61,43,54,0.10)',
-  purple: '#8B5CF6',
-  purpleSoft: '#7C3AED',
-  // 偏差値の大きな数字・ネオンボタン等で使用（ライト背景でも読めるビビッドピンク）
-  pink: '#EC4899',
-  pinkLight: '#DB2777',
-  text: '#3D2B36',
-  textSub: '#8A6E7C',
-  star: '#F59E0B',
-  starEmpty: 'rgba(61,43,54,0.15)',
-  // 検定（認定証・段位）用ゴールド（ライト背景で読める濃さ）
-  gold: '#D9A400',
-  goldLight: '#B45309',
-  goldSoft: 'rgba(217,164,0,0.14)',
+  glass: 'rgba(176,121,139,0.06)',
+  glassBorder: 'rgba(74,64,63,0.10)',
+  purple: '#9C92A8',
+  purpleSoft: '#7C7189',
+  // 偏差値の大きな数字・ボタン等で使用（くすみローズ）
+  pink: '#B0798B',
+  pinkLight: '#8F6274',
+  text: '#47403E',
+  textSub: '#8A7E79',
+  star: '#C9A971',
+  starEmpty: 'rgba(74,64,63,0.15)',
+  // 検定（認定証・段位）用のくすみゴールド
+  gold: '#B8945F',
+  goldLight: '#8C6B3A',
+  goldSoft: 'rgba(184,148,95,0.14)',
 };
 
 export const spacing = {

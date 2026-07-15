@@ -8,16 +8,16 @@ const ROOT = path.resolve(__dirname, '..');
 const FONT = 'Meiryo';
 
 const C = {
-  peach: '#FED7AA',
-  pink: '#F9A8D4',
-  pinkSoft: '#FBCFE8',
+  peach: '#E7D3C7', // くすみグレージュ〜ピーチ
+  pink: '#D3A6AF', // くすみダスティローズ
+  pinkSoft: '#E5CBD1',
   white: '#FFFFFF',
-  face: '#9D174D', // 目・口（濃いローズ）
-  cheek: '#FB7185',
-  gold: '#FCD34D',
-  name: '#9D174D',
+  face: '#6E4B57', // 目・口（くすみプラム）
+  cheek: '#C98B9E',
+  gold: '#C9A971', // くすみゴールド
+  name: '#6E4B57',
   navy: '#0F172A',
-  sub: '#B45C81',
+  sub: '#8A7E79',
 };
 
 const defs = `
@@ -86,7 +86,7 @@ function bannerSVG() {
   <circle cx="${cx + r * 0.46}" cy="${cy + r * 0.2}" r="${r * 0.11}" fill="${C.cheek}" opacity="0.55"/>
   <path d="M ${cx - r * 0.3} ${cy + r * 0.1} Q ${cx} ${cy + r * 0.52} ${cx + r * 0.3} ${cy + r * 0.1}" stroke="${C.face}" stroke-width="${r * 0.08}" fill="none" stroke-linecap="round"/>
   ${sparkle(280, 60, 26, C.gold)}
-  <text x="322" y="140" font-family="${FONT}" font-weight="900" font-size="122" fill="${C.name}" dominant-baseline="central">オオギリ<tspan fill="#EC4899">検定</tspan></text>
+  <text x="322" y="140" font-family="${FONT}" font-weight="900" font-size="122" fill="${C.name}" dominant-baseline="central">オオギリ<tspan fill="#B0798B">検定</tspan></text>
 </svg>`;
 }
 
