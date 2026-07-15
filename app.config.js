@@ -10,7 +10,7 @@ module.exports = {
     splash: {
       image: './assets/splash.png',
       resizeMode: 'contain',
-      backgroundColor: '#0F172A',
+      backgroundColor: '#FBCFE8',
     },
     assetBundlePatterns: ['**/*'],
     ios: {
@@ -26,7 +26,7 @@ module.exports = {
     android: {
       adaptiveIcon: {
         foregroundImage: './assets/adaptive-icon.png',
-        backgroundColor: '#0F172A',
+        backgroundColor: '#FBCFE8',
       },
       package: 'com.ogiriapp.mobile',
       permissions: [

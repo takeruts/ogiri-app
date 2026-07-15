@@ -1,6 +1,5 @@
 // オオギリ検定 ブランドロゴ／アイコン生成スクリプト
-// 世界観: ダークネイビー × ゴールド（TOEIC/G検定のような「能力検定」トーン）。
-// SVG を定義し @resvg/resvg-js で各サイズの PNG にラスタライズ。日本語は Meiryo。
+// 世界観: やわらかく可愛い（女性向け）。パステルのピーチ×ピンク＋にこちゃん＋キラキラ。
 const fs = require('fs');
 const path = require('path');
 const { Resvg } = require('@resvg/resvg-js');
@@ -9,96 +8,107 @@ const ROOT = path.resolve(__dirname, '..');
 const FONT = 'Meiryo';
 
 const C = {
-  navy1: '#1E293B', // 背景グラデ上
-  navy2: '#0F172A', // 背景グラデ下
-  gold: '#F59E0B',
-  goldLight: '#FCD34D',
-  white: '#F8FAFC',
-  sub: '#94A3B8',
-  purple: '#7C3AED',
+  peach: '#FED7AA',
+  pink: '#F9A8D4',
+  pinkSoft: '#FBCFE8',
+  white: '#FFFFFF',
+  face: '#9D174D', // 目・口（濃いローズ）
+  cheek: '#FB7185',
+  gold: '#FCD34D',
+  name: '#9D174D',
+  navy: '#0F172A',
+  sub: '#B45C81',
 };
 
 const defs = `
-  <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="${C.navy1}"/>
-    <stop offset="1" stop-color="${C.navy2}"/>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="${C.peach}"/>
+    <stop offset="1" stop-color="${C.pink}"/>
   </linearGradient>
-  <linearGradient id="goldg" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="${C.goldLight}"/>
-    <stop offset="1" stop-color="${C.gold}"/>
-  </linearGradient>
-  <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
-    <feGaussianBlur stdDeviation="14" result="b"/>
-    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+    <feDropShadow dx="0" dy="10" stdDeviation="16" flood-color="#9D174D" flood-opacity="0.15"/>
   </filter>`;
 
-// 認定シール（金リング＋オオギリ／検定／★★★）。座標は 1024 系。
-function sealBody(withBg) {
+// キラキラ（4ポイントの星）
+function sparkle(cx, cy, s, color) {
+  return `<path d="M ${cx} ${cy - s} Q ${cx + s * 0.2} ${cy - s * 0.2} ${cx + s} ${cy}
+    Q ${cx + s * 0.2} ${cy + s * 0.2} ${cx} ${cy + s}
+    Q ${cx - s * 0.2} ${cy + s * 0.2} ${cx - s} ${cy}
+    Q ${cx - s * 0.2} ${cy - s * 0.2} ${cx} ${cy - s} Z" fill="${color}"/>`;
+}
+
+// ふきだし風の可愛いにこちゃん（大喜利＝しゃべる/笑うモチーフ）
+function smiley(cx, cy, r) {
+  const eR = r * 0.1;
   return `
-    ${withBg ? `<rect width="1024" height="1024" rx="225" fill="url(#bg)"/>` : ''}
-    <circle cx="512" cy="512" r="402" fill="none" stroke="url(#goldg)" stroke-width="14"/>
-    <circle cx="512" cy="512" r="372" fill="none" stroke="${C.gold}" stroke-opacity="0.4" stroke-width="3"/>
-    <text x="512" y="318" font-family="${FONT}" font-weight="700" font-size="112" fill="${C.white}" text-anchor="middle" dominant-baseline="central" letter-spacing="14">オオギリ</text>
-    <text x="512" y="520" font-family="${FONT}" font-weight="900" font-size="240" fill="url(#goldg)" text-anchor="middle" dominant-baseline="central" filter="url(#glow)" letter-spacing="8">検定</text>
-    <text x="512" y="712" font-family="${FONT}" font-weight="900" font-size="86" fill="${C.gold}" text-anchor="middle" dominant-baseline="central" letter-spacing="14">★★★</text>`;
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="${C.white}" filter="url(#soft)"/>
+    <path d="M ${cx - r * 0.28} ${cy + r * 0.86} L ${cx - r * 0.62} ${cy + r * 1.28} L ${cx - r * 0.02} ${cy + r * 0.98} Z" fill="${C.white}"/>
+    <circle cx="${cx - r * 0.34}" cy="${cy - r * 0.06}" r="${eR}" fill="${C.face}"/>
+    <circle cx="${cx + r * 0.34}" cy="${cy - r * 0.06}" r="${eR}" fill="${C.face}"/>
+    <circle cx="${cx - r * 0.46}" cy="${cy + r * 0.2}" r="${r * 0.11}" fill="${C.cheek}" opacity="0.55"/>
+    <circle cx="${cx + r * 0.46}" cy="${cy + r * 0.2}" r="${r * 0.11}" fill="${C.cheek}" opacity="0.55"/>
+    <path d="M ${cx - r * 0.3} ${cy + r * 0.1} Q ${cx} ${cy + r * 0.52} ${cx + r * 0.3} ${cy + r * 0.1}"
+      stroke="${C.face}" stroke-width="${r * 0.08}" fill="none" stroke-linecap="round"/>`;
 }
 
 function iconSVG() {
   return `<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
   <defs>${defs}</defs>
-  ${sealBody(true)}
+  <rect width="1024" height="1024" rx="240" fill="url(#bg)"/>
+  ${sparkle(240, 250, 46, C.white)}
+  ${sparkle(812, 300, 60, C.gold)}
+  ${sparkle(792, 720, 38, C.white)}
+  ${smiley(512, 430, 250)}
+  <text x="512" y="812" font-family="${FONT}" font-weight="900" font-size="128" fill="${C.name}" text-anchor="middle" dominant-baseline="central" letter-spacing="2">オオギリ検定</text>
 </svg>`;
 }
 
-// Android アダプティブ前景（透過・セーフエリア内の円シール）
+// Android アダプティブ前景（透過・セーフエリア内）
 function adaptiveSVG() {
   return `<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
   <defs>${defs}</defs>
-  <circle cx="512" cy="512" r="332" fill="url(#bg)" stroke="url(#goldg)" stroke-width="10"/>
-  <text x="512" y="432" font-family="${FONT}" font-weight="700" font-size="72" fill="${C.white}" text-anchor="middle" dominant-baseline="central" letter-spacing="8">オオギリ</text>
-  <text x="512" y="556" font-family="${FONT}" font-weight="900" font-size="150" fill="url(#goldg)" text-anchor="middle" dominant-baseline="central" filter="url(#glow)" letter-spacing="6">検定</text>
-  <text x="512" y="650" font-family="${FONT}" font-weight="900" font-size="48" fill="${C.gold}" text-anchor="middle" dominant-baseline="central" letter-spacing="8">★★★</text>
+  <circle cx="512" cy="512" r="330" fill="url(#bg)"/>
+  ${sparkle(360, 300, 34, C.white)}
+  ${sparkle(670, 340, 40, C.gold)}
+  ${smiley(512, 500, 200)}
 </svg>`;
 }
 
-function sealGroup(tx, ty, scale) {
-  return `<g transform="translate(${tx},${ty}) scale(${scale})">${sealBody(true)}</g>`;
+// 横長ロゴ（ヘッダー用・透過。ネイビー背景でも映えるよう文字は白＋ピンク）
+function bannerSVG() {
+  return `<svg width="1200" height="280" viewBox="0 0 1200 280" xmlns="http://www.w3.org/2000/svg">
+  <defs>${defs}</defs>
+  ${smiley(150, 140, 108)}
+  ${sparkle(276, 60, 26, C.gold)}
+  <text x="322" y="140" font-family="${FONT}" font-weight="900" font-size="122" fill="${C.white}" dominant-baseline="central">オオギリ<tspan fill="${C.pink}">検定</tspan></text>
+</svg>`;
 }
 
-// OGP / Twitter カード（1200x630）
+// OGP / Twitter カード（1200x630・パステル背景）
 function ogSVG() {
   return `<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
   <defs>${defs}</defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
-  ${sealGroup(86, 151, 0.32)}
-  <text x="455" y="232" font-family="${FONT}" font-weight="900" font-size="84" fill="${C.white}">オオギリ検定</text>
-  <text x="457" y="328" font-family="${FONT}" font-weight="700" font-size="38" fill="${C.goldLight}">AIがあなたの発想力を測定し、段位を認定。</text>
-  <text x="457" y="404" font-family="${FONT}" font-weight="400" font-size="30" fill="${C.sub}">受験 → 採点 → 認定 → 昇段</text>
-  <text x="457" y="462" font-family="${FONT}" font-weight="400" font-size="28" fill="${C.sub}">偏差値・全国ランキング・ログイン不要で今すぐ受験</text>
+  ${sparkle(120, 120, 34, C.white)}
+  ${sparkle(1080, 130, 46, C.gold)}
+  ${sparkle(1120, 520, 30, C.white)}
+  ${smiley(250, 315, 175)}
+  <text x="470" y="250" font-family="${FONT}" font-weight="900" font-size="92" fill="${C.name}">オオギリ検定</text>
+  <text x="472" y="348" font-family="${FONT}" font-weight="700" font-size="40" fill="${C.face}">あなたのお笑いセンスを、AIが認定。</text>
+  <text x="472" y="424" font-family="${FONT}" font-weight="400" font-size="30" fill="${C.sub}">偏差値・段位・タイプ診断　ログイン不要で今すぐ受験</text>
 </svg>`;
 }
 
-// スプラッシュ（ネイビー背景・中央にシール＋ブランド名）
+// スプラッシュ（パステル背景・中央にロゴ）
 function splashSVG() {
   return `<svg width="1242" height="1334" viewBox="0 0 1242 1334" xmlns="http://www.w3.org/2000/svg">
   <defs>${defs}</defs>
-  <rect width="1242" height="1334" fill="${C.navy2}"/>
-  ${sealGroup(341, 250, 0.547)}
-  <text x="621" y="980" font-family="${FONT}" font-weight="900" font-size="92" fill="${C.white}" text-anchor="middle" dominant-baseline="central">オオギリ検定</text>
-  <text x="621" y="1060" font-family="${FONT}" font-weight="400" font-size="38" fill="${C.goldLight}" text-anchor="middle" dominant-baseline="central">AIがあなたの発想力を段位で認定。</text>
-</svg>`;
-}
-
-// 横長ロゴ（ヘッダー／スタート画面でタイトル代わりに使う・透過）
-function bannerSVG() {
-  return `<svg width="1200" height="280" viewBox="0 0 1200 280" xmlns="http://www.w3.org/2000/svg">
-  <defs>${defs}</defs>
-  <g transform="translate(150,140)">
-    <circle r="118" fill="none" stroke="url(#goldg)" stroke-width="11"/>
-    <circle r="98" fill="none" stroke="${C.gold}" stroke-opacity="0.45" stroke-width="3"/>
-    <text x="0" y="6" font-family="${FONT}" font-weight="900" font-size="120" fill="url(#goldg)" text-anchor="middle" dominant-baseline="central" filter="url(#glow)">★</text>
-  </g>
-  <text x="320" y="140" font-family="${FONT}" font-weight="900" font-size="120" fill="${C.white}" dominant-baseline="central">オオギリ<tspan fill="${C.goldLight}">検定</tspan></text>
+  <rect width="1242" height="1334" fill="url(#bg)"/>
+  ${sparkle(300, 430, 44, C.white)}
+  ${sparkle(940, 470, 58, C.gold)}
+  ${smiley(621, 560, 240)}
+  <text x="621" y="900" font-family="${FONT}" font-weight="900" font-size="118" fill="${C.name}" text-anchor="middle" dominant-baseline="central" letter-spacing="2">オオギリ検定</text>
+  <text x="621" y="980" font-family="${FONT}" font-weight="400" font-size="40" fill="${C.face}" text-anchor="middle" dominant-baseline="central">あなたのお笑いセンスを、AIが認定。</text>
 </svg>`;
 }
 
