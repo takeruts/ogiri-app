@@ -74,13 +74,19 @@ function adaptiveSVG() {
 </svg>`;
 }
 
-// 横長ロゴ（ヘッダー用・透過。ネイビー背景でも映えるよう文字は白＋ピンク）
+// 横長ロゴ（明るいヘッダー用・透過。白ふきだしにピンク枠、文字は濃色＋ピンク）
 function bannerSVG() {
+  const cx = 150, cy = 140, r = 104, eR = r * 0.1;
   return `<svg width="1200" height="280" viewBox="0 0 1200 280" xmlns="http://www.w3.org/2000/svg">
   <defs>${defs}</defs>
-  ${smiley(150, 140, 108)}
-  ${sparkle(276, 60, 26, C.gold)}
-  <text x="322" y="140" font-family="${FONT}" font-weight="900" font-size="122" fill="${C.white}" dominant-baseline="central">オオギリ<tspan fill="${C.pink}">検定</tspan></text>
+  <circle cx="${cx}" cy="${cy}" r="${r}" fill="${C.white}" stroke="${C.pink}" stroke-width="9"/>
+  <circle cx="${cx - r * 0.34}" cy="${cy - r * 0.06}" r="${eR}" fill="${C.face}"/>
+  <circle cx="${cx + r * 0.34}" cy="${cy - r * 0.06}" r="${eR}" fill="${C.face}"/>
+  <circle cx="${cx - r * 0.46}" cy="${cy + r * 0.2}" r="${r * 0.11}" fill="${C.cheek}" opacity="0.55"/>
+  <circle cx="${cx + r * 0.46}" cy="${cy + r * 0.2}" r="${r * 0.11}" fill="${C.cheek}" opacity="0.55"/>
+  <path d="M ${cx - r * 0.3} ${cy + r * 0.1} Q ${cx} ${cy + r * 0.52} ${cx + r * 0.3} ${cy + r * 0.1}" stroke="${C.face}" stroke-width="${r * 0.08}" fill="none" stroke-linecap="round"/>
+  ${sparkle(280, 60, 26, C.gold)}
+  <text x="322" y="140" font-family="${FONT}" font-weight="900" font-size="122" fill="${C.name}" dominant-baseline="central">オオギリ<tspan fill="#EC4899">検定</tspan></text>
 </svg>`;
 }
 

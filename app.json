@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "description": "AIがあなたのお笑いセンスを診断するウェブアプリ。4つの観点でAI採点、ヒントも貰える。",
     "orientation": "portrait",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -33,8 +33,8 @@
       "description": "AIがあなたのお笑いセンスを診断するウェブアプリ",
       "lang": "ja",
       "scope": "/",
-      "themeColor": "#F59E0B",
-      "backgroundColor": "#0F172A",
+      "themeColor": "#EC4899",
+      "backgroundColor": "#FFF6F9",
       "display": "standalone",
       "orientation": "portrait"
     },

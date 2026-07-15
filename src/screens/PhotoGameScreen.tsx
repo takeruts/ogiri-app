@@ -628,7 +628,7 @@ const styles = StyleSheet.create({
   },
   hintLabel: {
     ...typography.caption,
-    color: '#FCD34D',
+    color: '#B45309',
     fontWeight: 'bold',
     marginBottom: spacing.sm,
   },

@@ -170,9 +170,9 @@ export const HistoryScreen = ({ navigation }: any) => {
 
   // 順位 → 称号（検定の格付け）
   const getRankTitle = (rank: number) => {
-    if (rank === 1) return { label: '名人', color: '#FCD34D' };
-    if (rank <= 3) return { label: '師範', color: '#F59E0B' };
-    if (rank <= 10) return { label: '達人', color: '#FB7185' };
+    if (rank === 1) return { label: '名人', color: '#B45309' };
+    if (rank <= 3) return { label: '師範', color: '#D97706' };
+    if (rank <= 10) return { label: '達人', color: '#E11D48' };
     if (rank <= 30) return { label: '精鋭', color: colors.primary };
     return { label: '挑戦者', color: colors.textSecondary };
   };

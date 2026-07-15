@@ -1910,7 +1910,7 @@ const styles = StyleSheet.create({
   },
   hintLabel: {
     ...typography.caption,
-    color: '#FCD34D',
+    color: '#B45309',
     fontWeight: 'bold',
     marginBottom: spacing.sm,
   },
@@ -2155,7 +2155,7 @@ const styles = StyleSheet.create({
   tipsTitle: {
     ...typography.bodySmall,
     fontWeight: 'bold',
-    color: '#FCD34D',
+    color: '#B45309',
     marginBottom: spacing.sm,
   },
   tipItem: {
@@ -2464,7 +2464,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(251,191,36,0.25)',
   },
   diagHintText: {
-    color: '#FDE68A',
+    color: '#92400E',
     fontSize: 14,
     lineHeight: 21,
   },

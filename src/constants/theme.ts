@@ -1,76 +1,76 @@
 // オオギリ検定 - モダンでポップで優しいテーマ
 
 export const colors = {
-  // Primary - ディープパープル（受験ボタン等）
-  primary: '#7C3AED',
-  primaryLight: '#8B5CF6',
-  primaryDark: '#6D28D9',
-  primarySoft: 'rgba(124,58,237,0.16)',
+  // Primary - ローズピンク（受験ボタン等）
+  primary: '#EC4899',
+  primaryLight: '#F472B6',
+  primaryDark: '#DB2777',
+  primarySoft: 'rgba(236,72,153,0.12)',
 
-  // Secondary - ゴールド
-  secondary: '#F59E0B',
-  secondaryLight: '#FCD34D',
-  secondaryDark: '#D97706',
-  secondarySoft: 'rgba(245,158,11,0.16)',
+  // Secondary - ラベンダー
+  secondary: '#A78BFA',
+  secondaryLight: '#C4B5FD',
+  secondaryDark: '#8B5CF6',
+  secondarySoft: 'rgba(167,139,250,0.14)',
 
   // Accent - ゴールド（段位・認定証・ハイライト）
-  accent: '#F59E0B',
-  accentLight: '#FCD34D',
-  accentDark: '#D97706',
-  accentSoft: 'rgba(245,158,11,0.16)',
+  accent: '#E0A400',
+  accentLight: '#F59E0B',
+  accentDark: '#B45309',
+  accentSoft: 'rgba(224,164,0,0.14)',
 
   // Success - ミントグリーン
-  success: '#34D399',
-  successLight: '#6EE7B7',
-  successDark: '#10B981',
-  successSoft: 'rgba(52,211,153,0.16)',
+  success: '#10B981',
+  successLight: '#34D399',
+  successDark: '#059669',
+  successSoft: 'rgba(16,185,129,0.14)',
 
   // Warning - アンバー
-  warning: '#FBBF24',
-  warningSoft: 'rgba(251,191,36,0.16)',
+  warning: '#D97706',
+  warningSoft: 'rgba(217,119,6,0.14)',
 
   // Error - ローズ
-  error: '#FB7185',
-  errorSoft: 'rgba(251,113,133,0.16)',
+  error: '#F43F5E',
+  errorSoft: 'rgba(244,63,94,0.12)',
 
-  // Neutral - ダークネイビー（検定の世界観）
-  background: '#0F172A',
-  surface: '#111827',
-  surfaceHover: '#1E293B',
-  border: 'rgba(255,255,255,0.12)',
-  borderLight: 'rgba(255,255,255,0.06)',
+  // Neutral - ライト（やわらかい女性向け）
+  background: '#FFF6F9',
+  surface: '#FFFFFF',
+  surfaceHover: '#FCEEF4',
+  border: 'rgba(61,43,54,0.10)',
+  borderLight: 'rgba(61,43,54,0.05)',
 
   // Text colors
-  text: '#F8FAFC',
-  textSecondary: '#94A3B8',
-  textLight: '#64748B',
+  text: '#3D2B36',
+  textSecondary: '#8A6E7C',
+  textLight: '#B7A2AD',
   textInverse: '#FFFFFF',
 
   // Special
-  overlay: 'rgba(2,6,23,0.72)',
-  shadow: 'rgba(245,158,11,0.30)',
+  overlay: 'rgba(61,43,54,0.40)',
+  shadow: 'rgba(236,72,153,0.18)',
 };
 
-// 診断（お笑いセンス診断）用デザイントークン
-// ダーク × 紫→ピンクのネオン／ガラスモーフィズムの世界観
+// 診断・段位・認定証まわりのデザイントークン
+// ライト × ピンク／ラベンダー／上品なゴールドのやわらかい世界観
 export const diag = {
-  bg: '#0F172A',
-  bgCard: '#111827',
-  glass: 'rgba(255,255,255,0.05)',
-  glassBorder: 'rgba(255,255,255,0.12)',
-  purple: '#7C3AED',
-  purpleSoft: '#A5B4FC',
-  // 旧ピンク枠 → 検定ゴールドに統一（偏差値・ネオンボタン等で使用）
-  pink: '#F59E0B',
-  pinkLight: '#FCD34D',
-  text: '#F8FAFC',
-  textSub: '#94A3B8',
-  star: '#FBBF24',
-  starEmpty: 'rgba(255,255,255,0.18)',
-  // 検定（認定証・段位）用ゴールド
-  gold: '#F59E0B',
-  goldLight: '#FCD34D',
-  goldSoft: 'rgba(245,158,11,0.16)',
+  bg: '#FFF6F9',
+  bgCard: '#FFFFFF',
+  glass: 'rgba(236,72,153,0.06)',
+  glassBorder: 'rgba(61,43,54,0.10)',
+  purple: '#8B5CF6',
+  purpleSoft: '#7C3AED',
+  // 偏差値の大きな数字・ネオンボタン等で使用（ライト背景でも読めるビビッドピンク）
+  pink: '#EC4899',
+  pinkLight: '#DB2777',
+  text: '#3D2B36',
+  textSub: '#8A6E7C',
+  star: '#F59E0B',
+  starEmpty: 'rgba(61,43,54,0.15)',
+  // 検定（認定証・段位）用ゴールド（ライト背景で読める濃さ）
+  gold: '#D9A400',
+  goldLight: '#B45309',
+  goldSoft: 'rgba(217,164,0,0.14)',
 };
 
 export const spacing = {
