@@ -32,6 +32,10 @@ type GamePhase = 'nickname' | 'start' | 'generating' | 'answering' | 'scoring' |
 // 総合診断で連続回答するお題数
 const DIAG_COUNT = 3;
 
+// ranking_config が読めない場合（migration 未適用など）に使う下限日時。
+// 全期間を集計対象にする＝リセット前の従来動作にフォールバックする。
+const EPOCH_FALLBACK = '1970-01-01T00:00:00Z';
+
 interface DiagEntry {
   topic: string;
   answer: string;
@@ -165,11 +169,21 @@ export const GameScreen = ({ route, navigation }: any) => {
       return;
     }
     try {
+      // ランキング・段位のリセット日時。これ以前のスコアは旧採点基準（甘め）で
+      // 付いたものなので集計から除外する。ranking_config は1行のみ。
+      const { data: cfg } = await supabase
+        .from('ranking_config')
+        .select('reset_at')
+        .limit(1)
+        .maybeSingle();
+      const resetAt = cfg?.reset_at ?? EPOCH_FALLBACK;
+
       // 段位・偏差値は履歴の積み重ねを使いつつ、直近の点数を重くする加重平均
       const { data: hist } = await supabase
         .from('game_history')
         .select('score')
         .eq('user_id', user.id)
+        .gte('created_at', resetAt)
         .order('created_at', { ascending: false })
         .limit(50);
       if (!hist || hist.length === 0) {

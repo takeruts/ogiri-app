@@ -51,9 +51,9 @@ module.exports = async (req, res) => {
   // 生成設定はサーバー側で上限を制限（プロキシ悪用の抑制）
   const gc = body.generationConfig || {};
   const generationConfig = {
-    temperature: typeof gc.temperature === 'number' ? gc.temperature : 0.7,
-    maxOutputTokens: Math.min(Number(gc.maxOutputTokens) || 1000, 1200),
-    thinkingConfig: gc.thinkingConfig || { thinkingLevel: 'minimal' },
+    temperature: typeof gc.temperature === 'number' ? gc.temperature : 0.3,
+    maxOutputTokens: Math.min(Number(gc.maxOutputTokens) || 3000, 3000),
+    thinkingConfig: gc.thinkingConfig || { thinkingLevel: 'medium' },
   };
 
   try {

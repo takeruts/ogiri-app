@@ -27,9 +27,10 @@ const extractText = (data: GeminiResponse): string | undefined => {
   return text || undefined;
 };
 
-// thinking モデルで maxOutputTokens を思考トークンが使い切らないよう、
-// 採点・お題生成のような構造化出力では思考を最小化する。
-const THINKING_CONFIG = { thinkingLevel: 'minimal' as const };
+// 採点は面白さの微妙な判断を伴うため、gemini-3.5-flash の既定である
+// medium の思考を使う（minimal だと採点精度が落ちる）。
+// 思考トークンが maxOutputTokens を圧迫する点に注意。
+const THINKING_CONFIG = { thinkingLevel: 'medium' as const };
 
 // お題とジャンルを含む結果
 export interface TopicResult {
@@ -1250,8 +1251,8 @@ suggestedGenre: 上記ジャンルから1つ選択`;
           },
         ],
         generationConfig: {
-          temperature: 0.5,
-          maxOutputTokens: 1000,
+          temperature: 0.3,
+          maxOutputTokens: 3000,
           thinkingConfig: THINKING_CONFIG,
         },
       }),
@@ -1383,6 +1384,18 @@ export const SCORING_CRITERIA = {
   ],
 };
 
+// 点数の目安を明示しないとLLMは70〜85点に寄るため、分布を固定して辛口化する。
+// 回答採点（scoreAnswer / scorePhotoAnswer）で共有。お題採点は保存可否の
+// 閾値（80点）に影響するため対象外。
+const STRICT_SCORING = `【採点の厳しさ】辛口で採点すること。以下の分布を厳守：
+- 90-100点: プロの大喜利芸人が唸るレベル。ほぼ出ない
+- 80-89点: かなり面白い。20回に1回程度の傑作
+- 60-79点: 面白い。声を出して笑える
+- 40-59点: 平均的。悪くないが平凡（大半の回答はここに収まる）
+- 20-39点: お題に答えているだけで笑いが弱い
+- 0-19点: お題から外れている、意味不明、無回答同然
+安易に60点以上を付けないこと。迷ったら必ず低い方の点数を選ぶこと。`;
+
 // 写真で一言の採点（画像URLと回答を送信）
 export const scorePhotoAnswer = async (imageUrl: string, answer: string): Promise<ScoreResult> => {
   const prompt = `写真で一言の大喜利を採点してください。
@@ -1395,6 +1408,8 @@ export const scorePhotoAnswer = async (imageUrl: string, answer: string): Promis
 - 意外性・裏切り（20点）: 写真から予想できない面白い解釈か
 - 写真との関連性（20点）: 写真の状況を活かしているか
 - 表現の巧みさ（10点）: 言葉選び、簡潔さ
+
+${STRICT_SCORING}
 
 {"score":数字0-100,"comment":"面白い点や足りない点を30字以内","hint":"この写真でウケるコツを50字以内"}`;
 
@@ -1422,8 +1437,8 @@ export const scorePhotoAnswer = async (imageUrl: string, answer: string): Promis
           },
         ],
         generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1000,
+          temperature: 0.3,
+          maxOutputTokens: 3000,
           thinkingConfig: THINKING_CONFIG,
         },
       }),
@@ -1507,6 +1522,8 @@ export const scoreAnswer = async (topic: string, answer: string): Promise<ScoreR
 - お題との関連性（20点）: お題の意図を理解しているか
 - 表現の巧みさ（10点）: 言葉選び、簡潔さ
 
+${STRICT_SCORING}
+
 JSON形式（説明文なし）:
 {"score":数字0-100,"comment":"面白い点や足りない点を30字以内","hint":"お題の狙いと高得点のコツを50字以内","type":"回答のお笑いセンスを表すタイプ名を10字以内で命名（例:天才ひらめき型/毒舌キレ型/シュール型/共感型/ど真ん中型）","axes":{"creativity":1〜5の整数,"sarcasm":1〜5の整数,"surreal":1〜5の整数,"empathy":1〜5の整数},"analysis":"回答の個性をSpotify Wrapped風に1文・20字以内で（例:予測不能度MAX）"}`;
 
@@ -1525,8 +1542,8 @@ JSON形式（説明文なし）:
           },
         ],
         generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1000,
+          temperature: 0.3,
+          maxOutputTokens: 3000,
           thinkingConfig: THINKING_CONFIG,
         },
       }),

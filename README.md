@@ -127,7 +127,12 @@ Supabase SQL Editorで以下のSQLファイルを順番に実行:
 supabase/migrations/create_game_history.sql
 supabase/migrations/002_update_schema.sql
 supabase/migrations/003_nickname_and_rankings.sql
+supabase/migrations/004_ranking_reset.sql
 ```
+
+> `004_ranking_reset.sql` はランキング・段位のカットオフ日時（`ranking_config.reset_at`）を
+> 導入する。**実行した時点でランキングと段位がリセットされる**（回答データは消えない）。
+> 取り消したい場合は `UPDATE ranking_config SET reset_at = '2000-01-01';` で全期間に戻せる。
 
 5. アプリの起動
 
