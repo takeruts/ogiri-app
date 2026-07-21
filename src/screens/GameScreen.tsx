@@ -1302,6 +1302,8 @@ https://www.ogirihub.com/`;
           <View style={styles.diagCard}>
             <Text style={styles.diagLabel}>お笑い偏差値</Text>
             <Text style={styles.diagDeviation}>{dev}</Text>
+            {/* ランキングに載る点数（生スコア・スピードボーナス込み）を併記して一致させる */}
+            <Text style={styles.diagScore}>採点 {result.score}点</Text>
             <View style={styles.diagTopPill}>
               <Text style={styles.diagTopPillText}>全国上位 {top}%</Text>
             </View>
@@ -2355,6 +2357,12 @@ const styles = StyleSheet.create({
     textShadowColor: diag.pink,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 24,
+  },
+  diagScore: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: diag.text,
+    marginTop: 2,
   },
   diagTopPill: {
     backgroundColor: 'rgba(156,146,168,0.20)',
