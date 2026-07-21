@@ -342,6 +342,13 @@ https://www.ogirihub.com/`;
             <Text style={styles.hintLabel}>💡 ヒント</Text>
             <Text style={styles.hintText}>{result.hint}</Text>
           </View>
+
+          {result.example ? (
+            <View style={styles.exampleCard}>
+              <Text style={styles.exampleLabel}>お手本の回答例</Text>
+              <Text style={styles.exampleText}>「{result.example}」</Text>
+            </View>
+          ) : null}
         </>
       )}
 
@@ -636,6 +643,26 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.text,
     lineHeight: 24,
+  },
+  exampleCard: {
+    backgroundColor: 'rgba(156,146,168,0.14)',
+    padding: spacing.lg,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.xxl,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primary,
+  },
+  exampleLabel: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontWeight: 'bold',
+    marginBottom: spacing.sm,
+  },
+  exampleText: {
+    ...typography.body,
+    color: colors.text,
+    lineHeight: 24,
+    fontWeight: 'bold',
   },
   buttonRow: {
     flexDirection: 'row',

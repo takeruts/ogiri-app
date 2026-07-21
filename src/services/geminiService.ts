@@ -1343,6 +1343,7 @@ export interface ScoreResult {
   score: number;
   comment: string;
   hint: string;
+  example?: string; // お手本の回答例（解説の後に提示）
   type?: string; // お笑いタイプ名（診断）
   axes?: DiagAxes; // 4軸スコア（診断レーダー）
   analysis?: string; // Spotify Wrapped 風の一言分析
@@ -1411,7 +1412,7 @@ export const scorePhotoAnswer = async (imageUrl: string, answer: string): Promis
 
 ${STRICT_SCORING}
 
-{"score":数字0-100,"comment":"面白い点や足りない点を30字以内","hint":"この写真でウケるコツを50字以内"}`;
+{"score":数字0-100,"comment":"面白い点や足りない点を30字以内","hint":"この写真でウケるコツを50字以内","example":"この写真への高得点のお手本回答を1つ40字以内で（実際に面白い具体的な一言。説明でなく回答そのもの）"}`;
 
   try {
     console.log('Calling Gemini API for photo scoring...');
@@ -1476,11 +1477,13 @@ ${STRICT_SCORING}
       const scoreMatch = resultText.match(/"score"\s*:\s*(\d+)/);
       const commentMatch = resultText.match(/"comment"\s*:\s*"((?:[^"\\]|\\.)*)"/);
       const hintMatch = resultText.match(/"hint"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+      const exampleMatch = resultText.match(/"example"\s*:\s*"((?:[^"\\]|\\.)*)"/);
 
       result = {
         score: scoreMatch ? parseInt(scoreMatch[1], 10) : 5,
         comment: commentMatch ? commentMatch[1].replace(/\\"/g, '"') : '採点完了',
         hint: hintMatch ? hintMatch[1].replace(/\\"/g, '"') : '写真の状況を活かしてみましょう！',
+        example: exampleMatch ? exampleMatch[1].replace(/\\"/g, '"') : undefined,
       };
     }
 
@@ -1525,7 +1528,7 @@ export const scoreAnswer = async (topic: string, answer: string): Promise<ScoreR
 ${STRICT_SCORING}
 
 JSON形式（説明文なし）:
-{"score":数字0-100,"comment":"面白い点や足りない点を30字以内","hint":"お題の狙いと高得点のコツを50字以内","type":"回答のお笑いセンスを表すタイプ名を10字以内で命名（例:天才ひらめき型/毒舌キレ型/シュール型/共感型/ど真ん中型）","axes":{"creativity":1〜5の整数,"sarcasm":1〜5の整数,"surreal":1〜5の整数,"empathy":1〜5の整数},"analysis":"回答の個性をSpotify Wrapped風に1文・20字以内で（例:予測不能度MAX）"}`;
+{"score":数字0-100,"comment":"面白い点や足りない点を30字以内","hint":"お題の狙いと高得点のコツを50字以内","example":"このお題への高得点のお手本回答を1つ40字以内で（実際に面白い具体的な回答。説明でなく回答そのもの）","type":"回答のお笑いセンスを表すタイプ名を10字以内で命名（例:天才ひらめき型/毒舌キレ型/シュール型/共感型/ど真ん中型）","axes":{"creativity":1〜5の整数,"sarcasm":1〜5の整数,"surreal":1〜5の整数,"empathy":1〜5の整数},"analysis":"回答の個性をSpotify Wrapped風に1文・20字以内で（例:予測不能度MAX）"}`;
 
   try {
     console.log('Calling Gemini API for scoring...');
@@ -1589,11 +1592,13 @@ JSON形式（説明文なし）:
       const scoreMatch = resultText.match(/"score"\s*:\s*(\d+)/);
       const commentMatch = resultText.match(/"comment"\s*:\s*"((?:[^"\\]|\\.)*)"/);
       const hintMatch = resultText.match(/"hint"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+      const exampleMatch = resultText.match(/"example"\s*:\s*"((?:[^"\\]|\\.)*)"/);
 
       result = {
         score: scoreMatch ? parseInt(scoreMatch[1], 10) : 5,
         comment: commentMatch ? commentMatch[1].replace(/\\"/g, '"') : '採点完了',
         hint: hintMatch ? hintMatch[1].replace(/\\"/g, '"') : '次も頑張ってください！',
+        example: exampleMatch ? exampleMatch[1].replace(/\\"/g, '"') : undefined,
       };
 
       console.log('Manual extraction result:', result);

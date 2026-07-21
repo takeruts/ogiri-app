@@ -1342,6 +1342,13 @@ https://www.ogirihub.com/`;
               <Text style={styles.diagHintText}>💡 {result.hint}</Text>
             </View>
 
+            {result.example ? (
+              <View style={styles.diagExample}>
+                <Text style={styles.diagExampleLabel}>お手本の回答例</Text>
+                <Text style={styles.diagExampleText}>「{result.example}」</Text>
+              </View>
+            ) : null}
+
             {answerTime !== null && (
               <Text style={styles.diagTime}>
                 回答時間 {answerTime < 60 ? `${answerTime}秒` : `${Math.floor(answerTime / 60)}分${answerTime % 60}秒`}
@@ -2489,6 +2496,28 @@ const styles = StyleSheet.create({
     color: '#8C6B3A',
     fontSize: 14,
     lineHeight: 21,
+  },
+  diagExample: {
+    width: '100%',
+    marginTop: spacing.md,
+    backgroundColor: 'rgba(156,146,168,0.14)',
+    borderRadius: 14,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: diag.purple,
+  },
+  diagExampleLabel: {
+    color: diag.textSub,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  diagExampleText: {
+    color: diag.text,
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: '700',
   },
   diagTime: {
     color: diag.textSub,
